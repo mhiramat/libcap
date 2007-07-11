@@ -1,5 +1,5 @@
 /*
- * $Id: _makenames.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
+ * $Id: _makenames.c,v 1.3 1999/05/14 04:46:15 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G. Morgan <morgan@linux.kernel.org>
  *
@@ -31,8 +31,8 @@ int main(void)
     int i, maxcaps=0;
 
     for ( i=0; list[i].index >= 0 && list[i].name; ++i ) {
-	if (maxcaps < list[i].index) {
-	    maxcaps = list[i].index;
+	if (maxcaps <= list[i].index) {
+	    maxcaps = list[i].index + 1;
 	}
 	pointers[list[i].index] = list[i].name;
     }
@@ -64,6 +64,12 @@ int main(void)
 
 /*
  * $Log: _makenames.c,v $
+ * Revision 1.3  1999/05/14 04:46:15  morgan
+ * another attempt to fix the bug Chris Evans found
+ *
+ * Revision 1.2  1999/05/14 04:38:06  morgan
+ * Fix from Chris Evans: off by one error when computing the name array
+ *
  * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
  * release 1.0 of libcap
  *
