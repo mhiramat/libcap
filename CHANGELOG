@@ -1,3 +1,14 @@
+libcap 1.10
+
+* fixed cap_free to abide by correct documention - use it to free
+  strings returned by cap_to_text().
+
+libcap 1.03
+
+* Fix from Chris Evans relating to not seeing all of the capabilities
+  in the automatically generated cap_names.h file (fix in
+  _makenames.c)
+
 libcap 1.02
 
 * fixed kernel version matching to always fail when attempting to

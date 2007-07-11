@@ -20,6 +20,7 @@ extern "C" {
  * information for the user library.
  */
 
+#include <sys/types.h>
 #include <linux/capability.h>
 
 /*
@@ -63,7 +64,7 @@ typedef enum {
 
 /* libcap/cap_alloc.c */
 cap_t   cap_dup(cap_t);
-int     cap_free(cap_t *);
+int     cap_free(void *);
 cap_t   cap_init(void);
 
 /* libcap/cap_flag.c */

@@ -1,5 +1,5 @@
 /*
- * $Id: cap_text.c,v 1.2 1999/04/17 23:25:09 morgan Exp $
+ * $Id: cap_text.c,v 1.3 1999/11/18 06:03:26 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
  * Copyright (c) 1997 Andrew Main <zefram@dcs.warwick.ac.uk>
@@ -15,8 +15,6 @@
 
 #include <ctype.h>
 #include <stdio.h>
-
-char *strdup(const char *s);
 
 /* Maximum output text length (16 per cap) */
 #define CAP_TEXT_SIZE    (16*__CAP_BITS)
@@ -306,11 +304,14 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 	*length_p = p - buf;
     }
 
-    return (strdup(buf));
+    return (_libcap_strdup(buf));
 }
 
 /*
  * $Log: cap_text.c,v $
+ * Revision 1.3  1999/11/18 06:03:26  morgan
+ * fixed cap_free to work as indicated in manuals
+ *
  * Revision 1.2  1999/04/17 23:25:09  morgan
  * fixes from peeterj
  *

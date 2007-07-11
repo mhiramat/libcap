@@ -1,5 +1,5 @@
 /*
- * $Id: setpcaps.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
+ * $Id: setpcaps.c,v 1.2 1999/11/18 06:04:26 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G. Morgan  <morgan@linux.kernel.org>
  *
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
 	    result = cap_to_text(cap_d, &length);
 	    fprintf(stderr, "[caps set to:\n%s\n]\n", result);
-	    free(result);
+	    cap_free(result);
 	    result = NULL;
 	}
 #endif
@@ -127,6 +127,9 @@ int main(int argc, char **argv)
 
 /*
  * $Log: setpcaps.c,v $
+ * Revision 1.2  1999/11/18 06:04:26  morgan
+ * use cap_free and not free for string from cap_to_text()
+ *
  * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
  * release 1.0 of libcap
  *
