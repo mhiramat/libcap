@@ -3,7 +3,7 @@
  *
  * 
  * Copyright (C) 1997   Aleph One
- * Copyright (C) 1997-8 Andrew G. Morgan <morgan@linux.kernel.org>
+ * Copyright (C) 1997-8 Andrew G. Morgan <morgan@kernel.org>
  *
  * defunct POSIX.1e Standard: 25.2 Capabilities           <sys/capability.h>
  */

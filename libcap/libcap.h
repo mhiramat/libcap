@@ -1,9 +1,5 @@
 /*
- * $Id: libcap.h,v 1.5 1999/11/18 07:23:24 morgan Exp $
- *
- * Copyright (c) 1997 Andrew G Morgan <morgan@linux.kernel.org>
- *
- * See end of file for Log.
+ * Copyright (c) 1997 Andrew G Morgan <morgan@kernel.org>
  *
  * This file contains internal definitions for the various functions in
  * this small capability library.
@@ -117,37 +113,3 @@ extern int capgetp(pid_t pid, cap_t cap_d);
 extern int capsetp(pid_t pid, cap_t cap_d);
 
 #endif /* LIBCAP_H */
-
-/*
- * $Log: libcap.h,v $
- * Revision 1.5  1999/11/18 07:23:24  morgan
- * final fixes tested on a RH6.0 system for release-1.10
- *
- * Revision 1.4  1999/11/18 06:25:02  morgan
- * added prototype for _libcap_strdup
- *
- * Revision 1.3  1999/11/18 06:03:26  morgan
- * fixed cap_free to work as indicated in manuals
- *
- * Revision 1.2  1999/04/17 23:25:10  morgan
- * fixes from peeterj
- *
- * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
- * release 1.0 of libcap
- *
- * Revision 1.5  1998/06/08 00:15:28  morgan
- * accommodate alpha (glibc?)
- *
- * Revision 1.4  1998/06/07 15:58:23  morgan
- * accommodate real kernel header files :*)
- *
- * Revision 1.3  1998/05/24 22:54:09  morgan
- * updated for 2.1.104
- *
- * Revision 1.2  1997/04/28 00:57:11  morgan
- * zefram's replacement file with a number of bug fixes from AGM
- *
- * Revision 1.1  1997/04/21 04:32:52  morgan
- * Initial revision
- *
- */

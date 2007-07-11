@@ -1,5 +1,5 @@
 /*
- * This was written by Andrew G. Morgan <morgan@linux.kernel.org>
+ * This was written by Andrew G. Morgan <morgan@kernel.org>
  *
  * This is a program that is intended to exec a subsequent program.
  * The purpose of this 'execcap' wrapper is to limit the inheritable
@@ -13,6 +13,7 @@
 #include <sys/capability.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 static void usage(void)
 {
@@ -23,12 +24,12 @@ static void usage(void)
 "  intended to assist in overcoming a lack of support for filesystem\n"
 "  capability attributes and should be used to launch other files.\n"
 "  This program should _NOT_ be made setuid-0.\n\n"
-"[Copyright (c) 1998 Andrew G. Morgan <morgan@linux.kernel.org>]\n");
+"[Copyright (c) 1998 Andrew G. Morgan <morgan@kernel.org>]\n");
 
     exit(1);
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     cap_t new_caps;
 
@@ -52,7 +53,7 @@ void main(int argc, char **argv)
     /* set these capabilities for the current process */
     if (cap_set_proc(new_caps) != 0) {
 	fprintf(stderr, "unable to set capabilities: %s\n", strerror(errno));
-	usage();	
+	usage();
     }
 
     /* exec the program indicated by args 2 ... */
@@ -62,4 +63,6 @@ void main(int argc, char **argv)
     fprintf(stderr, "Unable to execute command: %s\n", strerror(errno));
 
     usage();
+
+    return 0;
 }

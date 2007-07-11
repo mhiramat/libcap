@@ -1,9 +1,5 @@
 /*
- * $Id: cap_extint.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
- *
- * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
- *
- * See end of file for Log.
+ * Copyright (c) 1997-8 Andrew G Morgan <morgan@kernel.org>
  *
  * This file deals with exchanging internal and external
  * representations of capability sets.
@@ -91,7 +87,7 @@ cap_t cap_copy_int(const void *cap_ext)
 	(const struct cap_ext_struct *) cap_ext;
     cap_t cap_d;
     int set, blen;
-    __u32 * to = (__u32 *) &cap_d->set;
+    __u32 * to;
 
     /* Does the external representation make sense? */
     if (export == NULL || !memcmp(export->magic, external_magic
@@ -104,6 +100,7 @@ cap_t cap_copy_int(const void *cap_ext)
     if (!(cap_d = cap_init()))
        return NULL;
 
+    to = (__u32 *) &cap_d->set;
     blen = export->length_of_capset;
     for (set=0; set<=NUMBER_OF_CAP_SETS; ++set) {
 	int blk;
@@ -128,18 +125,3 @@ cap_t cap_copy_int(const void *cap_ext)
     return cap_d;
 }
 
-/*
- * $Log: cap_extint.c,v $
- * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
- * release 1.0 of libcap
- *
- * Revision 1.3  1998/05/24 22:54:09  morgan
- * updated for 2.1.104
- *
- * Revision 1.2  1997/04/28 00:57:11  morgan
- * fixes and zefram's patches
- *
- * Revision 1.1  1997/04/21 04:32:52  morgan
- * Initial revision
- *
- */

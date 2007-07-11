@@ -1,7 +1,5 @@
 /*
- * $Id: setpcaps.c,v 1.2 1999/11/18 06:04:26 morgan Exp $
- *
- * Copyright (c) 1997-8 Andrew G. Morgan  <morgan@linux.kernel.org>
+ * Copyright (c) 1997-8 Andrew G. Morgan  <morgan@kernel.org>
  *
  * This sets the capabilities of a given process.
  */
@@ -24,7 +22,7 @@ static void usage(void)
 "  raised, and the only capabilities that this program can bestow on others\n"
 "  are a subset of its effective set.  This program is mostly intended as an\n"
 "  example -- a safe use of CAP_SETPCAP has yet to be demonstrated!\n\n"
-"[Copyright (c) 1997-8 Andrew G. Morgan  <morgan@linux.kernel.org>]\n"
+"[Copyright (c) 1997-8 Andrew G. Morgan  <morgan@kernel.org>]\n"
 	);
     exit(1);
 }
@@ -124,28 +122,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-/*
- * $Log: setpcaps.c,v $
- * Revision 1.2  1999/11/18 06:04:26  morgan
- * use cap_free and not free for string from cap_to_text()
- *
- * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
- * release 1.0 of libcap
- *
- * Revision 1.3  1998/09/20 23:07:08  morgan
- * fixed comment at top
- *
- * Revision 1.2  1998/06/08 00:17:38  morgan
- * change to accommodate alpha (glibc?)
- *
- * Revision 1.1  1998/06/07 01:46:51  morgan
- * Initial revision
- *
- * Revision 1.2  1997/05/04 05:34:32  morgan
- * non void main
- *
- * Revision 1.1  1997/04/28 01:01:20  morgan
- * Initial revision
- *
- */

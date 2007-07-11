@@ -1,7 +1,5 @@
 /*
- * $Id: setcap.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
- *
- * Copyright (c) 1997 Andrew G. Morgan  <morgan@parc.power.net>
+ * Copyright (c) 1997 Andrew G. Morgan  <morgan@kernel.org>
  *
  * This sets the capabilities of a given file.
  */
@@ -110,16 +108,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-/*
- * $Log: setcap.c,v $
- * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
- * release 1.0 of libcap
- *
- * Revision 1.2  1997/05/04 05:34:32  morgan
- * non void main
- *
- * Revision 1.1  1997/04/28 01:01:20  morgan
- * Initial revision
- *
- */

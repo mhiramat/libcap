@@ -14,17 +14,21 @@ FAKEROOT=
 # Otherwise binaries and libraraies are installed in /{lib,sbin}/,
 # header files in /usr/include/ and documentation in /usr/man/man?/.
 
+ifndef lib
+lib=lib
+endif
+
 ifdef prefix
 exec_prefix=$(prefix)
 lib_prefix=$(exec_prefix)
 inc_prefix=$(lib_prefix)
-man_prefix=$(prefix)
+man_prefix=$(prefix)/share
 else
 prefix=/usr
 exec_prefix=
 lib_prefix=$(exec_prefix)
 inc_prefix=$(prefix)
-man_prefix=$(prefix)
+man_prefix=$(prefix)/share
 endif
 
 # Target directories
@@ -32,22 +36,22 @@ endif
 MANDIR=$(FAKEROOT)$(man_prefix)/man
 SBINDIR=$(FAKEROOT)$(exec_prefix)/sbin
 INCDIR=$(FAKEROOT)$(inc_prefix)/include
-LIBDIR=$(FAKEROOT)$(lib_prefix)/lib
+LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
 
 # common defines for libcap (suitable for 2.2.1+ Linux kernels)
 VERSION=1
-MINOR=10
+MINOR=95
 #
 
 # Compilation specifics
 
 CC=gcc
 COPTFLAGS=-O2
-DEBUG=-g #-DDEBUG
-WARNINGS=-ansi -D_POSIX_SOURCE -Wall -Wwrite-strings \
+DEBUG=-O2 -g #-DDEBUG
+WARNINGS=-fPIC -D_POSIX_SOURCE -Wall -Wwrite-strings \
         -Wpointer-arith -Wcast-qual -Wcast-align \
-        -Wtraditional -Wstrict-prototypes -Wmissing-prototypes \
-        -Wnested-externs -Winline -Wshadow -pedantic
+        -Wstrict-prototypes -Wmissing-prototypes \
+        -Wnested-externs -Winline -Wshadow
 LD=ld
 LDFLAGS=-s #-g
 

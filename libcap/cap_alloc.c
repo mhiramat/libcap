@@ -1,9 +1,5 @@
 /*
- * $Id: cap_alloc.c,v 1.3 1999/11/18 07:23:24 morgan Exp $
- *
- * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
- *
- * See end of file for Log.
+ * Copyright (c) 1997-8 Andrew G Morgan <morgan@kernel.org>
  *
  * This file deals with allocation and deallocation of internal
  * capability sets as specified by POSIX.1e (formerlly, POSIX 6).
@@ -97,6 +93,8 @@ cap_t cap_dup(cap_t cap_d)
 
 int cap_free(void *data_p)
 {
+    if ( !data_p )
+	return 0;
 
     if ( good_cap_t(data_p) ) {
 	data_p = -1 + (__u32 *) data_p;
@@ -119,25 +117,3 @@ int cap_free(void *data_p)
     errno = EINVAL;
     return -1;
 }
-
-/*
- * $Log: cap_alloc.c,v $
- * Revision 1.3  1999/11/18 07:23:24  morgan
- * final fixes tested on a RH6.0 system for release-1.10
- *
- * Revision 1.2  1999/11/18 06:03:26  morgan
- * fixed cap_free to work as indicated in manuals
- *
- * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
- * release 1.0 of libcap
- *
- * Revision 1.3  1998/05/24 22:54:09  morgan
- * updated for 2.1.104
- *
- * Revision 1.2  1997/04/28 00:57:11  morgan
- * fixes and zefram's patches
- *
- * Revision 1.1  1997/04/21 04:32:52  morgan
- * Initial revision
- *
- */

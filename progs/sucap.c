@@ -20,6 +20,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 static void usage(void)
 {
@@ -48,7 +49,7 @@ wait_on_fd(int fd)
 }
 
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     cap_t old_caps;
     uid_t uid;
@@ -193,4 +194,6 @@ void main(int argc, char **argv)
 	/* exit to signal mother process that we are ready */
 	_exit(0);
     }
+
+    return 0;
 }

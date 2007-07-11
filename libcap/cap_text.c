@@ -1,10 +1,6 @@
 /*
- * $Id: cap_text.c,v 1.3 1999/11/18 06:03:26 morgan Exp $
- *
- * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
+ * Copyright (c) 1997-8 Andrew G Morgan <morgan@kernel.org>
  * Copyright (c) 1997 Andrew Main <zefram@dcs.warwick.ac.uk>
- *
- * See end of file for Log.
  *
  * This file deals with exchanging internal and textual
  * representations of capability sets.
@@ -57,18 +53,23 @@ static char const *namcmp(char const *str, char const *nam)
 
 static int lookupname(char const **strp)
 {
-    char const *str = *strp;
-    if (isdigit(*str)) {
-	unsigned long n = strtoul(str, (char **)&str, 0);
+    union {
+	char const *constp;
+	char *p;
+    } str;
+
+    str.constp = *strp;
+    if (isdigit(*str.constp)) {
+	unsigned long n = strtoul(str.constp, &str.p, 0);
 	if (n >= __CAP_BITS)
 	    return -1;
-	*strp = str;
+	*strp = str.constp;
 	return n;
     } else {
 	char const *s;
 	int n;
 	for (n = __CAP_BITS; n--; )
-	    if (_cap_names[n] && (s = namcmp(str, _cap_names[n]))) {
+	    if (_cap_names[n] && (s = namcmp(str.constp, _cap_names[n]))) {
 		*strp = s;
 		return n;
 	    }
@@ -209,9 +210,10 @@ cap_t cap_from_text(const char *str)
     }
 
 bad:
-    cap_free(&res);
+    cap_free(res);
+    res = NULL;
     errno = EINVAL;
-    return NULL;
+    return res;
 }
 
 /*
@@ -306,28 +308,3 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 
     return (_libcap_strdup(buf));
 }
-
-/*
- * $Log: cap_text.c,v $
- * Revision 1.3  1999/11/18 06:03:26  morgan
- * fixed cap_free to work as indicated in manuals
- *
- * Revision 1.2  1999/04/17 23:25:09  morgan
- * fixes from peeterj
- *
- * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
- * release 1.0 of libcap
- *
- * Revision 1.4  1998/05/24 22:54:09  morgan
- * updated for 2.1.104
- *
- * Revision 1.3  1997/05/04 05:37:00  morgan
- * case sensitvity to capability flags
- *
- * Revision 1.2  1997/04/28 00:57:11  morgan
- * zefram's replacement file with a number of bug fixes from AGM
- *
- * Revision 1.1  1997/04/21 04:32:52  morgan
- * Initial revision
- *
- */
