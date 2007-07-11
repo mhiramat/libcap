@@ -1,5 +1,5 @@
 /*
- * $Id: cap_proc.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
+ * $Id: cap_proc.c,v 1.2 1999/04/18 20:50:01 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
  *
@@ -30,13 +30,18 @@ cap_t cap_get_proc(void)
 
 int cap_set_proc(cap_t cap_d)
 {
+    int retval;
+
     if (!good_cap_t(cap_d)) {
 	errno = EINVAL;
 	return -1;
     }
 
     _cap_debug("setting process capabilities");
-    return capset(&cap_d->head, &cap_d->set);
+    retval = capset(&cap_d->head, &cap_d->set);
+
+    cap_d->head.version = _LINUX_CAPABILITY_VERSION;
+    return retval;
 }
 
 /* the following two functions are not required by POSIX */
@@ -56,6 +61,7 @@ int capgetp(pid_t pid, cap_t cap_d)
 
     cap_d->head.pid = pid;
     error = capget(&cap_d->head, &cap_d->set);
+    cap_d->head.version = _LINUX_CAPABILITY_VERSION;
     cap_d->head.pid = 0;
 
     return error;
@@ -75,6 +81,7 @@ int capsetp(pid_t pid, cap_t cap_d)
     _cap_debug("setting process capabilities for proc %d", pid);
     cap_d->head.pid = pid;
     error = capset(&cap_d->head, &cap_d->set);
+    cap_d->head.version = _LINUX_CAPABILITY_VERSION;
     cap_d->head.pid = 0;
 
     return error;
@@ -82,6 +89,11 @@ int capsetp(pid_t pid, cap_t cap_d)
 
 /*
  * $Log: cap_proc.c,v $
+ * Revision 1.2  1999/04/18 20:50:01  morgan
+ * reliable behavior when trying to talk with a kernel that has a more
+ * modern capability implementation than the one the library was compiled
+ * with.
+ *
  * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
  * release 1.0 of libcap
  *

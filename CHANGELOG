@@ -1,3 +1,8 @@
+libcap 1.02
+
+* fixed kernel version matching to always fail when attempting to
+  use an incompatible version of the library with the current kernel
+
 libcap 1.01
 
 * bug fixes from peeterj.
