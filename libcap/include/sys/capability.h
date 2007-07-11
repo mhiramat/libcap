@@ -5,11 +5,15 @@
  * Copyright (C) 1997   Aleph One
  * Copyright (C) 1997-8 Andrew G. Morgan <morgan@linux.kernel.org>
  *
- * POSIX.1e Standard: 25.2 Capabilities                 <sys/capability.h>
+ * defunct POSIX.1e Standard: 25.2 Capabilities           <sys/capability.h>
  */
 
 #ifndef _SYS_CAPABILITY_H
 #define _SYS_CAPABILITY_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * This file complements the kernel file by providing prototype
@@ -100,5 +104,9 @@ extern int capsetp(pid_t pid, cap_t cap_d);
 extern char const *_cap_names[];
 
 #endif /* !defined(_POSIX_SOURCE) */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SYS_CAPABILITY_H */

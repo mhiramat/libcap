@@ -19,7 +19,7 @@ More information on capabilities in the Linux kernel can be found at
 	Linux-Caps % make install
 
 		installs the library libcap.XX.Y in /lib/
-		the binaries in /bin/
+		the binaries in /sbin/
 		the <sys/capability.h> file in /usr/include
 
 * for some example programs look in progs.

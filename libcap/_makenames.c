@@ -1,5 +1,5 @@
 /*
- * $Id: _makenames.c,v 1.4 1998/06/07 15:50:12 morgan Exp $
+ * $Id: _makenames.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G. Morgan <morgan@linux.kernel.org>
  *
@@ -64,6 +64,9 @@ int main(void)
 
 /*
  * $Log: _makenames.c,v $
+ * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+ * release 1.0 of libcap
+ *
  * Revision 1.4  1998/06/07 15:50:12  morgan
  * updated to accommodate kernel's real header file :*)
  *

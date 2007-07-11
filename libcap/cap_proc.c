@@ -1,5 +1,5 @@
 /*
- * $Id: cap_proc.c,v 1.5 1998/05/24 22:54:09 morgan Exp $
+ * $Id: cap_proc.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
  *
@@ -82,6 +82,9 @@ int capsetp(pid_t pid, cap_t cap_d)
 
 /*
  * $Log: cap_proc.c,v $
+ * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+ * release 1.0 of libcap
+ *
  * Revision 1.5  1998/05/24 22:54:09  morgan
  * updated for 2.1.104
  *

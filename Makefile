@@ -1,5 +1,5 @@
 #
-# $Id: Makefile,v 1.4 1997/05/14 05:15:40 morgan Exp $
+# $Id: Makefile,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
 #
 # Makefile for libcap
 

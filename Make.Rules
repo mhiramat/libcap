@@ -1,5 +1,5 @@
 #
-# $Id: Make.Rules,v 1.7 1999/01/30 03:50:34 morgan Exp $
+# $Id: Make.Rules,v 1.2 1999/04/17 23:26:39 morgan Exp $
 #
 
 #
@@ -36,7 +36,7 @@ LIBDIR=$(FAKEROOT)$(lib_prefix)/lib
 
 # common defines for libcap (suitable for 2.2.1+ Linux kernels)
 VERSION=1
-MINOR=0
+MINOR=01
 #
 
 # Compilation specifics

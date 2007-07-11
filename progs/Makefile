@@ -1,5 +1,8 @@
 ##
 ## $Log: Makefile,v $
+## Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+## release 1.0 of libcap
+##
 ## Revision 1.6  1998/09/20 23:17:32  morgan
 ## added sucap.c
 ##

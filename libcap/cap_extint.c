@@ -1,5 +1,5 @@
 /*
- * $Id: cap_extint.c,v 1.3 1998/05/24 22:54:09 morgan Exp $
+ * $Id: cap_extint.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G Morgan <morgan@linux.kernel.org>
  *
@@ -130,6 +130,9 @@ cap_t cap_copy_int(const void *cap_ext)
 
 /*
  * $Log: cap_extint.c,v $
+ * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+ * release 1.0 of libcap
+ *
  * Revision 1.3  1998/05/24 22:54:09  morgan
  * updated for 2.1.104
  *

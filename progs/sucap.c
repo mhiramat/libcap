@@ -1,5 +1,5 @@
 /*
- * $Id: sucap.c,v 1.3 1999/01/30 03:40:39 morgan Exp $
+ * $Id: sucap.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
  *
  * This was written by Finn Arne Gangstad <finnag@guardian.no>
  *

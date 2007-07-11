@@ -1,5 +1,5 @@
 /*
- * $Id: getpcaps.c,v 1.4 1998/09/20 23:07:08 morgan Exp $
+ * $Id: getpcaps.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
  *
  * Copyright (c) 1997 Andrew G. Morgan  <morgan@linux.kernel.org>
  *
@@ -63,6 +63,9 @@ int main(int argc, char **argv)
 
 /*
  * $Log: getpcaps.c,v $
+ * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+ * release 1.0 of libcap
+ *
  * Revision 1.4  1998/09/20 23:07:08  morgan
  * fixed comment at top
  *

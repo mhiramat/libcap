@@ -1,5 +1,8 @@
 ##
 ## $Log: Makefile,v $
+## Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+## release 1.0 of libcap
+##
 ## Revision 1.5  1998/05/24 22:54:09  morgan
 ## updated for 2.1.104
 ##

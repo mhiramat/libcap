@@ -1,0 +1,4 @@
+libcap 1.01
+
+* bug fixes from peeterj.
+* documentation fix regarding where binaries are installed

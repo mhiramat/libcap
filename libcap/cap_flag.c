@@ -1,5 +1,5 @@
 /*
- * $Id: cap_flag.c,v 1.4 1998/09/20 23:07:59 morgan Exp $
+ * $Id: cap_flag.c,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
  *
  * Copyright (c) 1997-8 Andrew G. Morgan <morgan@linux.kernel.org>
  *
@@ -107,6 +107,9 @@ int cap_clear(cap_t cap_d)
 
 /*
  * $Log: cap_flag.c,v $
+ * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+ * release 1.0 of libcap
+ *
  * Revision 1.4  1998/09/20 23:07:59  morgan
  * fixed lower bound check on 'set'.
  *

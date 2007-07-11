@@ -1,5 +1,5 @@
 /*
- * $Id: libcap.h,v 1.5 1998/06/08 00:15:28 morgan Exp $
+ * $Id: libcap.h,v 1.2 1999/04/17 23:25:10 morgan Exp $
  *
  * Copyright (c) 1997 Andrew G Morgan <morgan@linux.kernel.org>
  *
@@ -18,6 +18,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/capability.h>
+
+#ifndef __u8
+#define __u8    unsigned char
+#endif /* __8 */
+
+#ifndef __u32
+#define __u32   unsigned int
+#endif /* __u32 */
 
 /* include the names for the caps and a definition of __CAP_BITS */
 #include "cap_names.h"
@@ -61,7 +69,7 @@ typedef struct {
     __u32 _blk[__CAP_BLKS];
 } __cap_s;
 #define raise_cap(x)   _blk[(x)>>5] |= (1<<((x)&31))
-#define lower_cap(x)   _blk[(x)>>5] |= (1<<((x)&31))
+#define lower_cap(x)   _blk[(x)>>5] &= ~(1<<((x)&31))
 #define isset_cap(y,x) ((y)->_blk[(x)>>5] & (1<<((x)&31)))
 
 /*
@@ -107,6 +115,12 @@ extern int capsetp(pid_t pid, cap_t cap_d);
 
 /*
  * $Log: libcap.h,v $
+ * Revision 1.2  1999/04/17 23:25:10  morgan
+ * fixes from peeterj
+ *
+ * Revision 1.1.1.1  1999/04/17 22:16:31  morgan
+ * release 1.0 of libcap
+ *
  * Revision 1.5  1998/06/08 00:15:28  morgan
  * accommodate alpha (glibc?)
  *
