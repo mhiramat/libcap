@@ -1,0 +1,70 @@
+#
+# $Id: Make.Rules,v 1.7 1999/01/30 03:50:34 morgan Exp $
+#
+
+#
+## Optional prefixes:
+#
+
+# common 'packaging' directoty
+
+FAKEROOT=
+
+# Autoconf-style prefixes are activated when $(prefix) is defined.
+# Otherwise binaries and libraraies are installed in /{lib,sbin}/,
+# header files in /usr/include/ and documentation in /usr/man/man?/.
+
+ifdef prefix
+exec_prefix=$(prefix)
+lib_prefix=$(exec_prefix)
+inc_prefix=$(lib_prefix)
+man_prefix=$(prefix)
+else
+prefix=/usr
+exec_prefix=
+lib_prefix=$(exec_prefix)
+inc_prefix=$(prefix)
+man_prefix=$(prefix)
+endif
+
+# Target directories
+
+MANDIR=$(FAKEROOT)$(man_prefix)/man
+SBINDIR=$(FAKEROOT)$(exec_prefix)/sbin
+INCDIR=$(FAKEROOT)$(inc_prefix)/include
+LIBDIR=$(FAKEROOT)$(lib_prefix)/lib
+
+# common defines for libcap (suitable for 2.2.1+ Linux kernels)
+VERSION=1
+MINOR=0
+#
+
+# Compilation specifics
+
+CC=gcc
+COPTFLAGS=-O2
+DEBUG=-g #-DDEBUG
+WARNINGS=-ansi -D_POSIX_SOURCE -Wall -Wwrite-strings \
+        -Wpointer-arith -Wcast-qual -Wcast-align \
+        -Wtraditional -Wstrict-prototypes -Wmissing-prototypes \
+        -Wnested-externs -Winline -Wshadow -pedantic
+LD=ld
+LDFLAGS=-s #-g
+
+IPATH=-I$(topdir)/libcap/include
+INCS=$(topdir)/libcap/include/sys/capability.h
+LIBS=-L$(topdir)/libcap -lcap
+CFLAGS=-Dlinux $(WARNINGS) $(DEBUG) $(COPTFLAG) $(IPATH)
+
+# Global cleanup stuff
+
+LOCALCLEAN=rm -f *~ core
+DISTCLEAN=@find . \( -name '*.orig' -o -name '*.rej' \) | xargs rm -f
+
+# Flags to pass down recursive makes
+
+MAKE_DEFS = CC='$(CC)' CFLAGS='$(CFLAGS)' \
+	LD='$(LD)' LIBS='$(LIBS)' LDFLAGS='$(LDFLAGS)' \
+	VERSION='$(VERSION)' MINOR='$(MINOR)' \
+	LIBDIR='$(LIBDIR)' INCDIR='$(INCDIR)' \
+	SBINDIR='$(SBINDIR)' MANDIR='$(MANDIR)'

@@ -1,0 +1,25 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	98.05.24.21.05.20;	author morgan;	state Exp;
+branches;
+next	;
+
+
+desc
+@links for other functions
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@.so man3/cap_get_proc.3
+@

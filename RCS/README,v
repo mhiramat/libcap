@@ -1,0 +1,89 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	98.05.17.17.33.01;	author morgan;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	97.04.21.04.32.27;	author morgan;	state Exp;
+branches;
+next	;
+
+
+desc
+@a start
+@
+
+
+1.2
+log
+@updated for 0.102
+@
+text
+@
+This is a library for getting and setting POSIX.1e (formerly POSIX 6)
+draft 15 capabilities.
+
+This library would not have been possible without the help of 
+
+	Aleph1, Roland Buresund and Andrew Main, Alexander Kjeldaas.
+
+More information on capabilities in the Linux kernel can be found at
+
+	http://linux.kernel.org/pub/linux/libs/security/linux-privs/
+
+# INSTALLATION
+
+	Linux-Caps % make
+
+		builds the library and the programs
+
+	Linux-Caps % make install
+
+		installs the library libcap.XX.Y in /lib/
+		the binaries in /bin/
+		the <sys/capability.h> file in /usr/include
+
+* for some example programs look in progs.
+
+Cheers
+
+Andrew G. Morgan <morgan@@linux.kernel.org>
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+d3 1
+a3 2
+capabilities.  It has been written to conform to the capabilities
+associated with the capability-enhanced Linux kernel.
+d7 1
+a7 1
+	Aleph1, Roland Buresund and Andrew Main.
+d11 1
+a11 1
+    <URL:http://parc.power.net/morgan/Orange-Linux/linux-privs/>
+d25 1
+a25 7
+# TESTING (preliminary)
+
+	getcap <filename>
+
+[Not written yet:
+	setcap <filename> 
+]
+d29 1
+a29 1
+Andrew G. Morgan <morgan@@parc.power.net>
+@

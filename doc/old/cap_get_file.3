@@ -1,0 +1,94 @@
+.\"
+.\" $Id: cap_get_file.3,v 1.4 1998/05/17 17:40:28 morgan Exp $
+.\" written by Andrew Main <zefram@dcs.warwick.ac.uk>
+.\"
+.TH CAP_GET_FILE 3 "17th May 1998" "" "Linux Programmer's Manual"
+.SH NAME
+cap_get_file, cap_set_file, cap_get_fd, cap_set_fd \- capability manipulation on files
+.sp
+.B "    PLEASE NOTE NONE OF THESE FUNCTIONS ARE IMPLEMENTED IN 0.102. NEITHER IS THERE SUPPORT FOR THEM IN LINUX 2.1.102."
+.SH SYNOPSIS
+.B
+.sp
+.B #include <sys/capability.h>
+.sp
+.BI "cap_t cap_get_file(const char *" path_p );
+.sp
+.BI "int cap_set_file(const char *" path_p ", cap_t " cap_p );
+.sp
+.BI "cap_t cap_get_fd(int " fd );
+.sp
+.BI "int cap_set_fd(int " fd ", cap_t " caps );
+.SH USAGE
+.br
+.B cc ... -lcap
+.SH DESCRIPTION
+.B cap_get_file
+and
+.B cap_get_fd
+allocate a capability state in working storage and set it to represent the
+capability state of the pathname pointed to by
+.I path_p
+or the file open on descriptor
+.IR fd .
+These functions return a pointer to the newly created capability
+state.  The effects of reading the capability state from any file
+other than a regular file is undefined.  The caller should free any
+releasable memory, when the capability state in working storage is no
+longer required, by calling
+.B cap_free
+with the used
+.I cap_t
+as an argument.
+.PP
+.B cap_set_file
+and
+.B cap_set_fd
+set the values for all capability flags for all capabilities for the pathname
+pointed to by
+.I path_p
+or the file open on descriptor
+.IR fd ,
+with the capability state identified by
+.IR cap_p . 
+The new capability state of the file shall be completely determined by the
+contents of 
+.IR cap_p .
+For these functions to succeed, the calling process must have the
+.B CAP_SETFCAP
+capability enabled and either the effective user ID of the process must match
+the file owner or the calling process must have the effective flag of the
+.B CAP_FOWNER
+capability set.  The effects of writing the capability state to any file
+type other than a regular file are undefined.
+.SH "RETURN VALUE"
+.B cap_get_file
+and
+.B cap_get_fd
+return a non-NULL value on success, and NULL on failure.
+.PP
+.B cap_set_file
+and
+.B cap_set_fd
+return zero on success, and \-1 on failure.
+.PP
+On failure,
+.BR errno (3)
+is set to
+.BR EACCES ,
+.BR EBADFD ,
+.BR ENAMETOOLONG ,
+.BR ENOENT ,
+.BR ENOMEM ,
+.BR ENOTDIR ,
+.BR EPERM ,
+or
+.BR EROFS .
+.SH "CONFORMING TO"
+These functions are specified by POSIX.1e.
+.SH "SEE ALSO"
+.IR cap_clear (3),
+.IR cap_copy_ext (3),
+.IR cap_from_text (3),
+.IR cap_get_proc (3),
+.IR cap_init (3)

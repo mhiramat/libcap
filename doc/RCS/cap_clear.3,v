@@ -1,0 +1,169 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	97.05.24.19.45.28;	author morgan;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	97.04.28.00.54.52;	author morgan;	state Exp;
+branches;
+next	;
+
+
+desc
+@zefram's manual
+@
+
+
+1.2
+log
+@corrections from Aleph1
+@
+text
+@.\"
+.\" $Id: cap_clear.3,v 1.1 1997/04/28 00:54:52 morgan Exp morgan $
+.\"
+.TH CAP_CLEAR 3 "26th May 1997" "" "Linux Programmer's Manual"
+.SH NAME
+cap_clear, cap_get_flag, cap_set_flag \- capability data object manipulation
+.SH SYNOPSIS
+.B #include <sys/capability.h>
+.sp
+.BI "int cap_clear(cap_t " cap_p );
+.sp
+.BI "int cap_get_flag(cap_t " cap_p ", cap_value_t " cap ", cap_flag_t " flag ", cap_flag_value_t *" value_p ");"
+.sp
+.BI "int cap_set_flag(cap_t " cap_p ", cap_flag_t " flag ", int " ncap ", cap_value_t *" caps ", cap_flag_value_t " value ");"
+.SH USAGE
+.B cc ... -lcap
+.SH DESCRIPTION
+.B cap_clear
+initializes the capability state in working storage identified by
+.I cap_p
+in such a way that all capability flags are cleared.
+.PP
+.B cap_get_flag
+obtains the current value of the capability flag,
+.IR flag ,
+of the capability,
+.IR cap ,
+from the capability state identified by
+.I cap_p
+and places it in the location pointed to by
+.IR value_p .
+.PP
+.B cap_set_flag
+sets the flag,
+.IR flag ,
+of each capability in the array
+.I caps
+in the capability state identified by
+.I cap_p
+to
+.IR value .
+The argument,
+.IR ncap ,
+is used to specify the number of capabilities in the array,
+.IR caps .
+.PP
+A
+.B cap_value_t
+can identify any capability, such as
+.BR CAP_CHOWN .
+A
+.B cap_flag_t
+can be set to
+.BR CAP_EFFECTIVE ,
+.B CAP_INHERITABLE
+or
+.BR CAP_PERMITTED .
+A
+.B cap_flag_value_t
+can be
+.B CAP_CLEAR
+(0) or
+.B CAP_SET
+(1).
+.SH "RETURN VALUE"
+.BR cap_clear ,
+.B cap_get_flag
+and
+.B cap_set_flag
+return zero on success, and \-1 on failure.
+.PP
+On failure,
+.BR errno (3)
+is set to 
+.BR EINVAL ,
+indicating that one of the arguments is invalid.
+
+.SH "CONFORMING TO"
+These functions are specified by POSIX.1e.
+.SH "SEE ALSO"
+.IR cap_copy_ext (3),
+.IR cap_from_text (3),
+.IR cap_get_file (3),
+.IR cap_get_proc (3),
+.IR cap_init (3)
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d2 1
+a2 1
+.\" $Id$
+d4 1
+a4 1
+.TH CAP_CLEAR 3 "26th April 1997" "" "Linux Programmer's Manual"
+d6 1
+a6 1
+cap_clear, cap_get_flag, cap_set_flag \- twiddle bits in capability sets
+d10 1
+a10 1
+.BI "int cap_clear(cap_t " caps );
+d12 1
+a12 1
+.BI "int cap_get_flag(cap_t " caps ", cap_value_t " capno ", cap_flag_t " set ", cap_flag_value_t *" result_p ");"
+d14 3
+a16 1
+.BI "int cap_set_flag(cap_t " caps ", cap_flag_t " set ", int " numcaps ", cap_value_t *" capnos ", cap_flag_value_t " state ");"
+d19 3
+a21 2
+clears all bits in the capability sets of
+.IR caps .
+d24 8
+a31 8
+extracts the state of capability number
+.I capno
+from capability set
+.I set
+in
+.IR caps ,
+and writes it into
+.IR *result_p .
+d34 12
+a45 10
+sets the state of capabilities.  It sets capabilities in capability set
+.I set
+in
+.IR caps
+to state
+.IR state .
+The capabilities to set are specified in an array pointed to by
+.I capnos
+of length
+.IR numcaps .
+d49 1
+a49 1
+can be set to any capability number, such as
+@

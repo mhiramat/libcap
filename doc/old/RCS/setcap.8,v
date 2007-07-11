@@ -1,0 +1,51 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	97.04.28.00.54.52;	author morgan;	state Exp;
+branches;
+next	;
+
+
+desc
+@zefram's manual
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@.\"
+.\" $Id$
+.\"
+.TH SETCAP 8 "26th April 1997"
+.SH NAME
+setcap \- set file capabilities
+.SH SYNOPSIS
+\fBsetcap\fP \fIcapabilities filename\fP [ ... \fIcapabilitiesN\fP \fIfileN\fP ]
+.SH DESCRIPTION
+.B setcap
+sets the capabilities of each specified
+.I filename
+to the
+.I capabilities
+specified.  The
+.I capabilities
+are specified in the form described in
+.IR cap_from_text (3).
+.PP
+The special filename, '\-',
+can be used to indicate that capabilities are read from the standard
+input. In such cases, the capability set is terminated with a blank
+line.
+.SH "SEE ALSO"
+.IR cap_from_text (3),
+.IR cap_set_file (3),
+.IR getcap (8)
+@
