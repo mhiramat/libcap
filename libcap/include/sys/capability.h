@@ -1,7 +1,6 @@
 /*
  * <sys/capability.h>
  *
- * 
  * Copyright (C) 1997   Aleph One
  * Copyright (C) 1997-8 Andrew G. Morgan <morgan@kernel.org>
  *
@@ -29,6 +28,8 @@ extern "C" {
  */
 #define _LINUX_TYPES_H
 #define _LINUX_FS_H
+#define __LINUX_COMPILER_H
+#define __user
 
 typedef unsigned int __u32;
 

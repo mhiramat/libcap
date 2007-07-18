@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Andrew G. Morgan  <morgan@kernel.org>
+ * Copyright (c) 1997,2007 Andrew G. Morgan  <morgan@kernel.org>
  *
  * This sets the capabilities of a given file.
  */
@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/capability.h>
 #include <unistd.h>
 
@@ -97,13 +98,14 @@ int main(int argc, char **argv)
 	    usage();
 
 	retval = cap_set_file(*++argv, cap_d);
-
 	if (retval != 0) {
 	    fprintf(stderr,
 		    "Failed to set capabilities on file `%s'\n"
 		    " (%s)\n", argv[0], strerror(errno));
 	    usage();
 	}
+
+	cap_free(cap_d);
     }
 
     return 0;

@@ -10,15 +10,13 @@ LIBNAME=$(LIBTITLE).so
 STALIBNAME=$(LIBTITLE).a
 #
 
-FILES=cap_alloc cap_proc cap_extint cap_flag cap_text
-
-# for later when there is filesystem support for cap's:
-#FILES += cap_file
+FILES=cap_alloc cap_proc cap_extint cap_flag cap_text cap_sys cap_file
 
 INCLS=libcap.h cap_names.h $(INCS)
 OBJS=$(addsuffix .o, $(FILES))
 MAJLIBNAME=$(LIBNAME).$(VERSION)
 MINLIBNAME=$(MAJLIBNAME).$(MINOR)
+LDFLAGS+=-lattr
 
 all: $(MINLIBNAME) $(STALIBNAME)
 
@@ -45,6 +43,12 @@ $(MINLIBNAME): $(OBJS)
 %.o: %.c $(INCLS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+<<<<<<< HEAD:libcap/Makefile
+=======
+cap_sys.o: cap_sys.c $(INCLS)
+	$(CC) $(IPATH) -fPIC -Wall -O2 -c $< -o $@
+
+>>>>>>> Add tentitive support for filesystem capabilities with 2.6.23-mm kernels:libcap/Makefile
 install: all
 	mkdir -p -m 0755 $(INCDIR)/sys
 	install -m 0644 include/sys/capability.h $(INCDIR)/sys

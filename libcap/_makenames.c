@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <linux/capability.h>
+#include <sys/capability.h>
 
 /*
  * #include 'sed' generated array

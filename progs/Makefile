@@ -4,15 +4,12 @@ include $(topdir)/Make.Rules
 #
 # Programs: all of the examples that we will compile
 #
-PROGS=getpcaps setpcaps execcap sucap
-
-# when we have filecaps...
-#PROGS+=getcap setcap
+PROGS=getpcaps getcap setcap
 
 all: $(PROGS)
 
 $(PROGS): %: %.o
-	$(CC) $(COPTFLAG) $(LDFLAGS) -o $@ $< $(LIBS)
+	$(CC) --static $(COPTFLAG) $(LDFLAGS) -o $@ $< $(LIBS)
 
 %.o: %.c $(INCS)
 	$(CC) $(CFLAGS) -c $< -o $@

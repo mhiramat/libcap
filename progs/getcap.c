@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997 Andrew G. Morgan  <morgan@kernel.org>
+ * Copyright (c) 1997,2007 Andrew G. Morgan  <morgan@kernel.org>
  *
  * This displays the capabilities of a given file.
  */
@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/capability.h>
 
 static void usage(void)
@@ -43,6 +44,9 @@ int main(int argc, char **argv)
 	result = cap_to_text(cap_d, &length);
 
 	fprintf(stderr, "Capabilities for `%s':\n%s\n", *argv, result);
+
+	cap_free(result);
+	cap_free(cap_d);
     }
 
     return 0;
