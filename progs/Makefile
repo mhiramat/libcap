@@ -12,7 +12,7 @@ PROGS=getpcaps setpcaps execcap sucap
 all: $(PROGS)
 
 $(PROGS): %: %.o
-	$(CC) $(LDFLAGS) -o $@ $< $(LIBS)
+	$(CC) $(COPTFLAG) $(LDFLAGS) -o $@ $< $(LIBS)
 
 %.o: %.c $(INCS)
 	$(CC) $(CFLAGS) -c $< -o $@

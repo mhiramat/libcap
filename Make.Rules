@@ -38,7 +38,8 @@ SBINDIR=$(FAKEROOT)$(exec_prefix)/sbin
 INCDIR=$(FAKEROOT)$(inc_prefix)/include
 LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
 
-# common defines for libcap (suitable for 2.2.1+ Linux kernels)
+# common defines for libcap
+LIBTITLE=libcap
 VERSION=1
 MINOR=95
 #
