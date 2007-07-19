@@ -41,7 +41,7 @@ LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
 # common defines for libcap
 LIBTITLE=libcap
 VERSION=1
-MINOR=97
+MINOR=99
 #
 
 # Compilation specifics
