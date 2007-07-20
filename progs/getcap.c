@@ -35,15 +35,14 @@ int main(int argc, char **argv)
 	cap_d = cap_get_file(argv[0]);
 
 	if (cap_d == NULL) {
-	    fprintf(stderr,
-		    "Failed to get capabilities for file `%s'\n"
-		    " (%s)\n", argv[0], strerror(errno));
+	    fprintf(stderr, "Failed to get capabilities for file `%s' (%s)\n",
+		    argv[0], strerror(errno));
 	    continue;
 	}
 
 	result = cap_to_text(cap_d, &length);
 
-	fprintf(stderr, "Capabilities for `%s':\n%s\n", *argv, result);
+	printf("%s: %s\n", *argv, result);
 
 	cap_free(result);
 	cap_free(cap_d);

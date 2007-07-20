@@ -11,9 +11,9 @@ include Make.Rules
 #
 
 all install clean: %: %-here
-	make -C libcap $(MAKE_DEFS) $@
-	make -C progs $(MAKE_DEFS) $@
-	make -C doc $(MAKE_DEFS) $@
+	$(MAKE) -C libcap $(MAKE_DEFS) $@
+	$(MAKE) -C progs $(MAKE_DEFS) $@
+	$(MAKE) -C doc $(MAKE_DEFS) $@
 
 all-here:
 

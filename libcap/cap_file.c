@@ -53,8 +53,8 @@ static int _fcaps_save(struct vfs_cap_data *rawvfscap, cap_t cap_d)
 
     if (cap_d->set.effective == 0) {
 	rawvfscap->magic_etc = FIXUP_32BITS(VFS_CAP_REVISION);
-    } else if (cap_d->set.effective
-	       ^ (cap_d->set.inheritable|cap_d->set.permitted)) {
+    } else if ((~(cap_d->set.effective))
+	       & (cap_d->set.inheritable|cap_d->set.permitted)) {
 	errno = EINVAL;
 	return -1;
     } else {

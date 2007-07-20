@@ -10,6 +10,8 @@
 #include <linux/unistd.h>
 #include <sys/capability.h>
 
+#define user
+
 _syscall2(int, capget,
 	  cap_user_header_t, header,
 	  cap_user_data_t, data)

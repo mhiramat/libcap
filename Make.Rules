@@ -56,7 +56,8 @@ WARNINGS=-fPIC -D_POSIX_SOURCE -Wall -Wwrite-strings \
 LD=ld
 LDFLAGS=-s #-g
 
-IPATH=-I$(topdir)/libcap/include
+KERNEL_HEADERS = /usr/include
+IPATH += -I$(topdir)/libcap/include
 INCS=$(topdir)/libcap/include/sys/capability.h
 LIBS=-L$(topdir)/libcap -lcap
 CFLAGS=-Dlinux $(WARNINGS) $(DEBUG) $(COPTFLAG) $(IPATH)

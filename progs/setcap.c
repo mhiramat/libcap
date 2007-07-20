@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 	    const char *result;
 
 	    result = cap_to_text(cap_d, &length);
-	    fprintf(stderr, "[caps set to:\n%s\n]\n", result);
+	    fprintf(stderr, "caps set to: [%s]\n", result);
 	}
 #endif
 
@@ -99,9 +99,8 @@ int main(int argc, char **argv)
 
 	retval = cap_set_file(*++argv, cap_d);
 	if (retval != 0) {
-	    fprintf(stderr,
-		    "Failed to set capabilities on file `%s'\n"
-		    " (%s)\n", argv[0], strerror(errno));
+	    fprintf(stderr, "Failed to set capabilities on file `%s' (%s)\n",
+		    argv[0], strerror(errno));
 	    usage();
 	}
 
