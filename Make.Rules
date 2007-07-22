@@ -57,6 +57,7 @@ LD=ld
 LDFLAGS=-s #-g
 
 KERNEL_HEADERS = /usr/include
+SYSTEM_HEADERS = /usr/include
 IPATH += -I$(topdir)/libcap/include
 INCS=$(topdir)/libcap/include/sys/capability.h
 LIBS=-L$(topdir)/libcap -lcap

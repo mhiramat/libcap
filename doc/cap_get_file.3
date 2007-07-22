@@ -6,7 +6,7 @@
 .SH NAME
 cap_get_file, cap_set_file, cap_get_fd, cap_set_fd \- capability manipulation on files
 .sp
-.B "    PLEASE NOTE NONE OF THESE FUNCTIONS ARE IMPLEMENTED IN 0.102. NEITHER IS THERE SUPPORT FOR THEM IN LINUX 2.1.102."
+.B "    Note: support for file capabilities is anticipated in Linux 2.6.23+"
 .SH SYNOPSIS
 .B
 .sp
@@ -50,10 +50,15 @@ pointed to by
 or the file open on descriptor
 .IR fd ,
 with the capability state identified by
-.IR cap_p . 
-The new capability state of the file shall be completely determined by the
-contents of 
 .IR cap_p .
+The new capability state of the file shall be completely determined by the
+contents of
+.IR cap_p .
+A
+.IR NULL
+value for
+.IR cap_p
+is used to indicate that capabilities for the file should be deleted.
 For these functions to succeed, the calling process must have the
 .B CAP_SETFCAP
 capability enabled and either the effective user ID of the process must match

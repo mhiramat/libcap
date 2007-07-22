@@ -14,8 +14,8 @@
 static void usage(void)
 {
     fprintf(stderr,
-	    "usage: setcap [-q] (-|<caps>) <filename> "
-	    "[ ... (-|<capsN>) <filenameN> ]\n"
+	    "usage: setcap [-q] (-r|-|<caps>) <filename> "
+	    "[ ... (-r|-|<capsN>) <filenameN> ]\n"
 	);
     exit(1);
 }
@@ -71,28 +71,33 @@ int main(int argc, char **argv)
 	    quiet = 1;
 	    continue;
 	}
-	if (!strcmp(*argv,"-")) {
-	    retval = read_caps(quiet, *argv, buffer);
-	    if (retval)
+	if (!strcmp(*argv,"-r")) {
+	    cap_d = NULL;
+	} else {
+	    if (!strcmp(*argv,"-")) {
+		retval = read_caps(quiet, *argv, buffer);
+		if (retval)
+		    usage();
+		text = buffer;
+	    } else {
+		text = *argv;
+	    }
+
+	    cap_d = cap_from_text(text);
+	    if (cap_d == NULL) {
+		perror("fatal error");
 		usage();
-	    text = buffer;
-	} else
-	    text = *argv;
-
-	cap_d = cap_from_text(text);
-	if (cap_d == NULL) {
-	    perror("fatal error");
-	    usage();
-	}
+	    }
 #ifdef DEBUG
-	{
-	    ssize_t length;
-	    const char *result;
+	    {
+		ssize_t length;
+		const char *result;
 
-	    result = cap_to_text(cap_d, &length);
-	    fprintf(stderr, "caps set to: [%s]\n", result);
-	}
+		result = cap_to_text(cap_d, &length);
+		fprintf(stderr, "caps set to: [%s]\n", result);
+	    }
 #endif
+	}
 
 	if (--argc <= 0)
 	    usage();
@@ -104,7 +109,9 @@ int main(int argc, char **argv)
 	    usage();
 	}
 
-	cap_free(cap_d);
+	if (cap_d) {
+	    cap_free(cap_d);
+	}
     }
 
     return 0;

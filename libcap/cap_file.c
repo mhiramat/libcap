@@ -134,7 +134,10 @@ int cap_set_fd(int fildes, cap_t cap_d)
 {
     struct vfs_cap_data rawvfscap;
 
-    if (_fcaps_save(&rawvfscap, cap_d) != 0) {
+    if (cap_d == NULL) {
+	_cap_debug("deleting fildes capabilities");
+	return fremovexattr(fildes, XATTR_NAME_CAPS);
+    } else if (_fcaps_save(&rawvfscap, cap_d) != 0) {
 	return -1;
     }
 
@@ -152,7 +155,10 @@ int cap_set_file(const char *filename, cap_t cap_d)
 {
     struct vfs_cap_data rawvfscap;
 
-    if (_fcaps_save(&rawvfscap, cap_d) != 0) {
+    if (cap_d == NULL) {
+	_cap_debug("removing filename capabilities");
+	return removexattr(filename, XATTR_NAME_CAPS);
+    } else if (_fcaps_save(&rawvfscap, cap_d) != 0) {
 	return -1;
     }
 

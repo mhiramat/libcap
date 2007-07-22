@@ -46,7 +46,7 @@ $(MINLIBNAME): $(OBJS)
 <<<<<<< HEAD:libcap/Makefile
 =======
 cap_sys.o: cap_sys.c $(INCLS)
-	$(CC) $(IPATH) -fPIC -Wall -O2 -c $< -o $@
+	$(CC) -include $(SYSTEM_HEADERS)/linux/unistd.h $(IPATH) -fPIC -Wall -O2 -c $< -o $@
 
 >>>>>>> Add tentitive support for filesystem capabilities with 2.6.23-mm kernels:libcap/Makefile
 install: all
