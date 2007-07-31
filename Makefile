@@ -26,4 +26,4 @@ distclean: clean
 	$(DISTCLEAN)
 
 release: distclean
-	cd .. ; tar cvfz libcap-$(VERSION).$(MINOR).tar.gz libcap-$(VERSION).$(MINOR)
+	cd .. && ln -s libcap libcap-$(VERSION).$(MINOR) && tar cvfz libcap-$(VERSION).$(MINOR).tar.gz libcap-$(VERSION).$(MINOR)/* && rm libcap-$(VERSION).$(MINOR)
