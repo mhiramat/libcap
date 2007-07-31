@@ -5,6 +5,8 @@
  * capabilities
  */
 
+#define user        /* for more recent 2.6 kernels */
+
 #include <linux/unistd.h>
 #include <linux/capability.h>
 
