@@ -1,3 +1,7 @@
+* See GIT repository for recent history
+
+  git://master.kernel.org/pub/scm/libs/libcap/libcap.git
+
 libcap 1.10
 
 * fixed cap_free to abide by correct documention - use it to free

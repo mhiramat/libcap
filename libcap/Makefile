@@ -10,7 +10,7 @@ LIBNAME=$(LIBTITLE).so
 STALIBNAME=$(LIBTITLE).a
 #
 
-FILES=cap_alloc cap_proc cap_extint cap_flag cap_text cap_sys cap_file
+FILES=cap_alloc cap_proc cap_extint cap_flag cap_text cap_file
 
 INCLS=libcap.h cap_names.h $(INCS)
 OBJS=$(addsuffix .o, $(FILES))
@@ -21,7 +21,7 @@ LDFLAGS+=-lattr
 all: $(MINLIBNAME) $(STALIBNAME)
 
 _makenames: _makenames.c cap_names.sed
-	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 cap_names.h: _makenames
 	./_makenames > cap_names.h
@@ -36,19 +36,13 @@ $(STALIBNAME): $(OBJS)
 	ranlib $(STALIBNAME)
 
 $(MINLIBNAME): $(OBJS)
-	$(CC) $(COPTFLAG) -Wl,-soname,$(MAJLIBNAME) -Wl,-x -shared -o $@ $(OBJS)
+	$(LD) $(LDFLAGS) $(COPTFLAG) -Wl,-soname,$(MAJLIBNAME) -o $@ $(OBJS)
 	ln -sf $(MINLIBNAME) $(MAJLIBNAME)
 	ln -sf $(MAJLIBNAME) $(LIBNAME)
 
 %.o: %.c $(INCLS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-<<<<<<< HEAD:libcap/Makefile
-=======
-cap_sys.o: cap_sys.c $(INCLS)
-	$(CC) -include $(SYSTEM_HEADERS)/linux/unistd.h $(IPATH) -fPIC -Wall -O2 -c $< -o $@
-
->>>>>>> Add tentitive support for filesystem capabilities with 2.6.23-mm kernels:libcap/Makefile
 install: all
 	mkdir -p -m 0755 $(INCDIR)/sys
 	install -m 0644 include/sys/capability.h $(INCDIR)/sys

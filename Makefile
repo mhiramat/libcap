@@ -1,8 +1,6 @@
 #
-# $Id: Makefile,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
-#
 # Makefile for libcap
-
+#
 topdir=$(shell pwd)
 include Make.Rules
 
@@ -12,6 +10,7 @@ include Make.Rules
 
 all install clean: %: %-here
 	$(MAKE) -C libcap $(MAKE_DEFS) $@
+	$(MAKE) -C pam_cap $(MAKE_DEFS) $@
 	$(MAKE) -C progs $(MAKE_DEFS) $@
 	$(MAKE) -C doc $(MAKE_DEFS) $@
 

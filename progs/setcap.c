@@ -58,14 +58,35 @@ int main(int argc, char **argv)
 {
     char buffer[MAXCAP+1];
     int retval, quiet=0;
-    cap_t cap_d;
+    cap_t mycaps;
+    cap_value_t capflag;
 
     if (argc < 3) {
 	usage();
     }
 
+    mycaps = cap_get_proc();
+    if (mycaps == NULL) {
+	perror("fatal error - unable to get process capabilities");
+	exit(1);
+    }
+    capflag = CAP_SETFCAP;
+
+    /*
+     * Raise the effective CAP_SETPCAP.
+     */
+    if (cap_set_flag(mycaps, CAP_EFFECTIVE, 1, &capflag, CAP_SET) != 0) {
+	perror("unable to manipulate CAP_SETFCAP - try a newer libcap?");
+	exit(1);
+    }
+    if (cap_set_proc(mycaps) != 0) {
+	perror("unable to set CAP_SETFCAP effective capability");
+	exit(1);
+    }
+
     while (--argc > 0) {
 	const char *text;
+	cap_t cap_d;
 
 	if (!strcmp(*++argv,"-q")) {
 	    quiet = 1;
@@ -102,6 +123,9 @@ int main(int argc, char **argv)
 	if (--argc <= 0)
 	    usage();
 
+	/*
+	 * Set the filesystem capability for this file.
+	 */
 	retval = cap_set_file(*++argv, cap_d);
 	if (retval != 0) {
 	    fprintf(stderr, "Failed to set capabilities on file `%s' (%s)\n",

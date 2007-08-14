@@ -1,10 +1,8 @@
 /*
- * Copyright (c) Andrew G. Morgan <morgan@linux.kernel.org>
+ * Copyright (c) 1999,2007 Andrew G. Morgan <morgan@kernel.org>
  *
  * The purpose of this module is to enforce inheritable capability sets
  * for a specified user.
- *
- * $Id$ <- no version yet ;)
  */
 
 /* #define DEBUG */
@@ -13,6 +11,8 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <syslog.h>
 
 #include <sys/capability.h>
 
@@ -60,7 +60,7 @@ static char *read_capabilities_for_user(const char *user, const char *source)
 	    continue;
 	}
 
-	while (line = strtok(NULL, CAP_FILE_DELIMITERS)) {
+	while ((line = strtok(NULL, CAP_FILE_DELIMITERS))) {
 
 	    if (strcmp("*", line) == 0) {
 		D(("wildcard matched"));
@@ -191,7 +191,7 @@ cleanup_cap_s:
 	cap_free(cap_s);
 	cap_s = NULL;
     }
-    
+
     return ok;
 }
 
@@ -308,4 +308,3 @@ int pam_sm_setcred(pam_handle_t *pamh, int flags,
 
     return (retval ? PAM_SUCCESS:PAM_IGNORE );
 }
-

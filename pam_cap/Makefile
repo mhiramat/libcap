@@ -1,13 +1,19 @@
 # simple make file for the pam_cap module
 
+topdir=$(shell pwd)/..
+include ../Make.Rules
+
+all: pam_cap.so
+	$(MAKE) testcompile
+
 pam_cap.so: pam_cap.o
-	ld -x --shared -o pam_cap.so $< -lcap
+	$(LD) -o pam_cap.so $< $(LIBS)
 
 pam_cap.o: pam_cap.c
-	$(CC) -fPIC -c $<
+	$(CC) $(CFLAGS) -c $< -o $@
 
-test: test.c pam_cap.o
-	$(CC) -o test test.c pam_cap.o -lpam -ldl -lcap
+testcompile: test.c pam_cap.o
+	$(CC) $(CFLAGS) -o $@ $+ -lpam -ldl $(LIBS)
 
 clean:
-	rm -f *.o *.so test
+	rm -f *.o *.so testcompile

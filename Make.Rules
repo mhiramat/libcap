@@ -49,16 +49,16 @@ MINOR=99
 CC=gcc
 COPTFLAGS=-O2
 DEBUG=-O2 -g #-DDEBUG
-WARNINGS=-fPIC -D_POSIX_SOURCE -Wall -Wwrite-strings \
+WARNINGS=-fPIC -Wall -Wwrite-strings \
         -Wpointer-arith -Wcast-qual -Wcast-align \
         -Wstrict-prototypes -Wmissing-prototypes \
         -Wnested-externs -Winline -Wshadow
-LD=ld
-LDFLAGS=-s #-g
+LD=$(CC) -Wl,-x -shared
+LDFLAGS=#-g
 
 KERNEL_HEADERS = /usr/include
 SYSTEM_HEADERS = /usr/include
-IPATH += -I$(topdir)/libcap/include
+IPATH += -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
 INCS=$(topdir)/libcap/include/sys/capability.h
 LIBS=-L$(topdir)/libcap -lcap
 CFLAGS=-Dlinux $(WARNINGS) $(DEBUG) $(COPTFLAG) $(IPATH)
