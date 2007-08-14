@@ -10,7 +10,7 @@ LIBNAME=$(LIBTITLE).so
 STALIBNAME=$(LIBTITLE).a
 #
 
-FILES=cap_alloc cap_proc cap_extint cap_flag cap_text cap_sys
+FILES=cap_alloc cap_proc cap_extint cap_flag cap_text
 
 # for later when there is filesystem support for cap's:
 #FILES += cap_file
@@ -44,9 +44,6 @@ $(MINLIBNAME): $(OBJS)
 
 %.o: %.c $(INCLS)
 	$(CC) $(CFLAGS) -c $< -o $@
-
-cap_sys.o: cap_sys.c $(INCLS)
-	$(CC) -fPIC -Wall -O2 -c $< -o $@
 
 install: all
 	mkdir -p -m 0755 $(INCDIR)/sys
