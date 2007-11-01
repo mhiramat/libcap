@@ -32,6 +32,7 @@ extern "C" {
 #define __user
 
 typedef unsigned int __u32;
+typedef __u32 __le32;
 
 #include <linux/capability.h>
 

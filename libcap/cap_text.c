@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-8 Andrew G Morgan <morgan@kernel.org>
+ * Copyright (c) 1997-8,2007 Andrew G Morgan <morgan@kernel.org>
  * Copyright (c) 1997 Andrew Main <zefram@dcs.warwick.ac.uk>
  *
  * This file deals with exchanging internal and textual
@@ -24,20 +24,21 @@
  * representation.
  */
 
-#define setbits(A,B) _setbits((__cap_s *)A, (__cap_s *)B)
-static void _setbits(__cap_s *a, __cap_s *b)
+#define raise_cap_mask(flat, c)  (flat)[CAP_TO_INDEX(c)] |= CAP_TO_MASK(c)
+
+static void setbits(cap_t a, const __u32 *b, cap_flag_t set)
 {
     int n;
-    for (n = __CAP_BLKS; n--; )
-	a->_blk[n] |= b->_blk[n];
+    for (n = __CAP_BLKS; n--; ) {
+	a->u[n].flat[set] |= b[n];
+    }
 }
 
-#define clrbits(A,B) _clrbits((__cap_s *)A, (__cap_s *)B)
-static void _clrbits(__cap_s *a, __cap_s *b)
+static void clrbits(cap_t a, const __u32 *b, cap_flag_t set)
 {
     int n;
     for (n = __CAP_BLKS; n--; )
-	a->_blk[n] &= ~b->_blk[n];
+	a->u[n].flat[set] &= ~b[n];
 }
 
 static char const *namcmp(char const *str, char const *nam)
@@ -49,6 +50,15 @@ static char const *namcmp(char const *str, char const *nam)
     if (*nam || isalnum((unsigned char)*str) || *str == '_')
 	return NULL;
     return str;
+}
+
+static void forceall(__u32 *flat, __u32 value)
+{
+    unsigned n;
+
+    for (n = __CAP_BLKS; n--; flat[n] = value);
+
+    return;
 }
 
 static int lookupname(char const **strp)
@@ -80,7 +90,6 @@ static int lookupname(char const **strp)
 cap_t cap_from_text(const char *str)
 {
     cap_t res;
-    __cap_s allones;
     int n;
 
     if (str == NULL) {
@@ -91,22 +100,24 @@ cap_t cap_from_text(const char *str)
 
     if (!(res = cap_init()))
 	return NULL;
-    for (n = __CAP_BLKS; n--; )
-	allones._blk[n] = -1;
+
     _cap_debug("%s", str);
 
     for (;;) {
+	__u32 list[__CAP_BLKS];
 	char op;
 	int flags = 0, listed=0;
-	__cap_s list = {{0}};
+
+	forceall(list, 0);
 
 	/* skip leading spaces */
 	while (isspace((unsigned char)*str))
 	    str++;
 	if (!*str) {
-	    _cap_debugcap("e = ", &res->set.effective);
-	    _cap_debugcap("i = ", &res->set.inheritable);
-	    _cap_debugcap("p = ", &res->set.permitted);
+	    _cap_debugcap("e = ", *res, CAP_EFFECTIVE);
+	    _cap_debugcap("i = ", *res, CAP_INHERITABLE);
+	    _cap_debugcap("p = ", *res, CAP_PERMITTED);
+
 	    return res;
 	}
 
@@ -115,12 +126,12 @@ cap_t cap_from_text(const char *str)
 	    for (;;) {
 		if (namcmp(str, "all")) {
 		    str += 3;
-		    list = allones;
+		    forceall(list, ~0);
 		} else {
 		    n = lookupname(&str);
 		    if (n == -1)
 			goto bad;
-		    list.raise_cap(n);
+		    raise_cap_mask(list, n);
 		}
 		if (*str != ',')
 		    break;
@@ -128,10 +139,11 @@ cap_t cap_from_text(const char *str)
 		    goto bad;
 	    }
 	    listed = 1;
-	} else if (*str == '+' || *str == '-')
+	} else if (*str == '+' || *str == '-') {
 	    goto bad;                    /* require a list of capabilities */
-	else
-	    list = allones;
+	} else {
+	    forceall(list, ~0);
+	}
 
 	/* identify first operation on list of capabilities */
 	op = *str++;
@@ -169,28 +181,28 @@ cap_t cap_from_text(const char *str)
 	    case '=':
 	    case 'P':                                              /* =+ */
 	    case 'M':                                              /* =- */
-		clrbits(&res->set.effective,   &list);
-		clrbits(&res->set.inheritable, &list);
-		clrbits(&res->set.permitted,   &list);
-		/* fall through */
+		clrbits(res, list, CAP_EFFECTIVE);
+		clrbits(res, list, CAP_PERMITTED);
+		clrbits(res, list, CAP_INHERITABLE);
 		if (op == 'M')
 		    goto minus;
+		/* fall through */
 	    case '+':
 		if (flags & LIBCAP_EFF)
-		    setbits(&res->set.effective,   &list);
-		if (flags & LIBCAP_INH)
-		    setbits(&res->set.inheritable, &list);
+		    setbits(res, list, CAP_EFFECTIVE);
 		if (flags & LIBCAP_PER)
-		    setbits(&res->set.permitted,   &list);
+		    setbits(res, list, CAP_PERMITTED);
+		if (flags & LIBCAP_INH)
+		    setbits(res, list, CAP_INHERITABLE);
 		break;
 	    case '-':
 	    minus:
-	        if (flags & LIBCAP_EFF)
-		    clrbits(&res->set.effective,   &list);
-		if (flags & LIBCAP_INH)
-		    clrbits(&res->set.inheritable, &list);
+		if (flags & LIBCAP_EFF)
+		    clrbits(res, list, CAP_EFFECTIVE);
 		if (flags & LIBCAP_PER)
-		    clrbits(&res->set.permitted,   &list);
+		    clrbits(res, list, CAP_PERMITTED);
+		if (flags & LIBCAP_INH)
+		    clrbits(res, list, CAP_INHERITABLE);
 		break;
 	    }
 
@@ -226,12 +238,15 @@ static int getstateflags(cap_t caps, int capno)
 {
     int f = 0;
 
-    if (isset_cap((__cap_s *)(&caps->set.effective),capno))
+    if (isset_cap(caps, capno, CAP_EFFECTIVE)) {
 	f |= LIBCAP_EFF;
-    if (isset_cap((__cap_s *)(&caps->set.inheritable),capno))
-	f |= LIBCAP_INH;
-    if (isset_cap((__cap_s *)(&caps->set.permitted),capno))
+    }
+    if (isset_cap(caps, capno, CAP_PERMITTED)) {
 	f |= LIBCAP_PER;
+    }
+    if (isset_cap(caps, capno, CAP_INHERITABLE)) {
+	f |= LIBCAP_INH;
+    }
 
     return f;
 }
@@ -251,9 +266,9 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 	return NULL;
     }
 
-    _cap_debugcap("e = ", &caps->set.effective);
-    _cap_debugcap("i = ", &caps->set.inheritable);
-    _cap_debugcap("p = ", &caps->set.permitted);
+    _cap_debugcap("e = ", *caps, CAP_EFFECTIVE);
+    _cap_debugcap("i = ", *caps, CAP_INHERITABLE);
+    _cap_debugcap("p = ", *caps, CAP_PERMITTED);
 
     for (n = __CAP_BITS; n--; )
 	histo[getstateflags(caps, n)]++;

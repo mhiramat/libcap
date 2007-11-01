@@ -20,13 +20,14 @@ static void usage(void)
 "usage: getcaps <pid> [<pid> ...]\n\n"
 "  This program displays the capabilities on the queried process(es).\n"
 "  The capabilities are displayed in the cap_from_text(3) format.\n\n"
-"[Copyright (c) 1997-8 Andrew G. Morgan  <morgan@kernel.org>]\n"
+"[Copyright (c) 1997-8,2007 Andrew G. Morgan  <morgan@kernel.org>]\n"
 	);
     exit(1);
 }
 
 int main(int argc, char **argv)
 {
+    int retval = 0;
     cap_t cap_d;
 
     if (argc < 2) {
@@ -48,7 +49,8 @@ int main(int argc, char **argv)
 	/* this is a non-POSIX function */
 	if (capgetp(pid, cap_d)) {
 		fprintf(stderr, "Failed to get cap's for proccess %d:"
-			" (%s)\n", pid, strerror(errno));
+			" (%s) - need new libcap?\n", pid, strerror(errno));
+		retval = 1;
 		continue;
 	} else {
 	    char *result = cap_to_text(cap_d, &length);
@@ -58,5 +60,5 @@ int main(int argc, char **argv)
 	}
     }
 
-    return 0;
+    return retval;
 }

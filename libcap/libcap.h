@@ -26,6 +26,31 @@
 #include "cap_names.h"
 
 /*
+ * Do we match the local kernel?
+ */
+
+#if !defined(_LINUX_CAPABILITY_VERSION)
+
+# error Kernel <linux/capability.h> does not support library
+# error file "libcap.h" --> fix and recompile libcap
+
+#elif (_LINUX_CAPABILITY_VERSION == 0x19980330)
+
+# warning Kernel <linux/capability.h> does not support 64-bit capabilities
+# warning and libcap is being built with no support for 64-bit capabilities
+
+# ifndef _LINUX_CAPABILITY_VERSION_1
+#  define _LINUX_CAPABILITY_VERSION_1 0x19980330
+# endif
+
+#elif (_LINUX_CAPABILITY_VERSION != 0x20071026)
+
+# error Kernel <linux/capability.h> does not match library
+# error file "libcap.h" --> fix and recompile libcap
+
+#endif
+
+/*
  * This is a pointer to a struct containing three consecutive
  * capability sets in the order of the cap_flag_t type: the are
  * effective,inheritable and permitted.  This is the type that the
@@ -34,40 +59,54 @@
  * to processes.
  */
 
+#ifndef _LINUX_CAPABILITY_U32S
+# define _LINUX_CAPABILITY_U32S           1
+#endif /* ndef _LINUX_CAPABILITY_U32S */
+
+#if defined(VFS_CAP_REVISION_MASK) && !defined(VFS_CAP_U32)
+# define VFS_CAP_U32_1                    1
+# define VFS_CAP_U32                      VFS_CAP_U32_1
+struct _cap_vfs_cap_data {
+    __le32 magic_etc;
+    struct {
+	__le32 permitted;
+	__le32 inheritable;
+    } data[VFS_CAP_U32_1];
+};
+# define vfs_cap_data                     _cap_vfs_cap_data
+#endif
+
+#ifndef CAP_TO_INDEX
+# define CAP_TO_INDEX(x)     ((x) >> 5)  /* 1 << 5 == bits in __u32 */
+#endif /* ndef CAP_TO_INDEX */
+
+#ifndef CAP_TO_MASK
+# define CAP_TO_MASK(x)      (1 << ((x) & 31))
+#endif /* ndef CAP_TO_MASK */
+
+#define NUMBER_OF_CAP_SETS      3   /* effective, inheritable, permitted */
+#define __CAP_BLKS   (_LINUX_CAPABILITY_U32S)
+#define CAP_SET_SIZE (__CAP_BLKS * sizeof(__u32))
+
 #define CAP_T_MAGIC 0xCA90D0
 struct _cap_struct {
     struct __user_cap_header_struct head;
-    struct __user_cap_data_struct set;
+    union {
+	struct __user_cap_data_struct set;
+	__u32 flat[NUMBER_OF_CAP_SETS];
+    } u[_LINUX_CAPABILITY_U32S];
 };
 
 /* string magic for cap_free */
 #define CAP_S_MAGIC 0xCA95D0
 
 /*
- * Do we match the local kernel?
- */
-
-#if !defined(_LINUX_CAPABILITY_VERSION) || \
-            (_LINUX_CAPABILITY_VERSION != 0x19980330)
-
-# error "Kernel <linux/capability.h> does not match library"
-# error "file "libcap.h" --> fix and recompile libcap"
-
-#endif
-
-/*
  * kernel API cap set abstraction
  */
 
-#define NUMBER_OF_CAP_SETS      3   /* effective, inheritable, permitted */
-#define CAP_SET_SIZE (sizeof(struct __user_cap_data_struct)/NUMBER_OF_CAP_SETS)
-#define __CAP_BLKS   (CAP_SET_SIZE/sizeof(__u32))
-typedef struct {
-    __u32 _blk[__CAP_BLKS];
-} __cap_s;
-#define raise_cap(x)   _blk[(x)>>5] |= (1<<((x)&31))
-#define lower_cap(x)   _blk[(x)>>5] &= ~(1<<((x)&31))
-#define isset_cap(y,x) ((y)->_blk[(x)>>5] & (1<<((x)&31)))
+#define raise_cap(x,set)   u[(x)>>5].flat[set]       |=  (1<<((x)&31))
+#define lower_cap(x,set)   u[(x)>>5].flat[set]       &= ~(1<<((x)&31))
+#define isset_cap(y,x,set) ((y)->u[(x)>>5].flat[set] &   (1<<((x)&31)))
 
 /*
  * Private definitions for internal use by the library.
@@ -83,19 +122,25 @@ typedef struct {
 #ifdef DEBUG
 
 #include <stdio.h>
-# define _cap_debug(f, x...)  { \
+# define _cap_debug(f, x...)  do { \
     fprintf(stderr, __FUNCTION__ "(" __FILE__ ":%d): ", __LINE__); \
     fprintf(stderr, f, ## x); \
     fprintf(stderr, "\n"); \
-}
-# define _cap_debugcap(s, c) \
-    fprintf(stderr, __FUNCTION__ "(" __FILE__ ":%d): " s \
-       "%08x\n", __LINE__, *(c))
+} while (0)
+
+# define _cap_debugcap(s, c, set) do { \
+    unsigned _cap_index; \
+    fprintf(stderr, __FUNCTION__ "(" __FILE__ ":%d): " s, __LINE__); \
+    for (_cap_index=_LINUX_CAPABILITY_U32S; _cap_index-- > 0; ) { \
+       fprintf(stderr, "%08x", (c).u[_cap_index].flat[set]); \
+    } \
+    fprintf(stderr, "\n"); \
+} while (0)
 
 #else /* !DEBUG */
 
 # define _cap_debug(f, x...)
-# define _cap_debugcap(s, c)
+# define _cap_debugcap(s, c, set)
 
 #endif /* DEBUG */
 

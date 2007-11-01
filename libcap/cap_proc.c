@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-8 Andrew G Morgan <morgan@kernel.org>
+ * Copyright (c) 1997-8,2007 Andrew G Morgan <morgan@kernel.org>
  *
  * This file deals with setting capabilities on processes.
  */
@@ -16,7 +16,7 @@ cap_t cap_get_proc(void)
 	_cap_debug("getting current process' capabilities");
 
 	/* fill the capability sets via a system call */
-	if (capget(&result->head, &result->set)) {
+	if (capget(&result->head, &result->u[0].set)) {
 	    cap_free(result);
 	    result = NULL;
 	}
@@ -35,9 +35,8 @@ int cap_set_proc(cap_t cap_d)
     }
 
     _cap_debug("setting process capabilities");
-    retval = capset(&cap_d->head, &cap_d->set);
+    retval = capset(&cap_d->head, &cap_d->u[0].set);
 
-    cap_d->head.version = _LINUX_CAPABILITY_VERSION;
     return retval;
 }
 
@@ -57,8 +56,7 @@ int capgetp(pid_t pid, cap_t cap_d)
     _cap_debug("getting process capabilities for proc %d", pid);
 
     cap_d->head.pid = pid;
-    error = capget(&cap_d->head, &cap_d->set);
-    cap_d->head.version = _LINUX_CAPABILITY_VERSION;
+    error = capget(&cap_d->head, &cap_d->u[0].set);
     cap_d->head.pid = 0;
 
     return error;
@@ -77,7 +75,7 @@ int capsetp(pid_t pid, cap_t cap_d)
 
     _cap_debug("setting process capabilities for proc %d", pid);
     cap_d->head.pid = pid;
-    error = capset(&cap_d->head, &cap_d->set);
+    error = capset(&cap_d->head, &cap_d->u[0].set);
     cap_d->head.version = _LINUX_CAPABILITY_VERSION;
     cap_d->head.pid = 0;
 

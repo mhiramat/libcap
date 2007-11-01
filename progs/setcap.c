@@ -67,21 +67,22 @@ int main(int argc, char **argv)
 
     mycaps = cap_get_proc();
     if (mycaps == NULL) {
-	perror("fatal error - unable to get process capabilities");
-	exit(1);
-    }
-    capflag = CAP_SETFCAP;
+	fprintf(stderr, "warning - unable to get process capabilities"
+		" (old libcap?)\n");
+    } else {
+	capflag = CAP_SETFCAP;
 
-    /*
-     * Raise the effective CAP_SETPCAP.
-     */
-    if (cap_set_flag(mycaps, CAP_EFFECTIVE, 1, &capflag, CAP_SET) != 0) {
-	perror("unable to manipulate CAP_SETFCAP - try a newer libcap?");
-	exit(1);
-    }
-    if (cap_set_proc(mycaps) != 0) {
-	perror("unable to set CAP_SETFCAP effective capability");
-	exit(1);
+	/*
+	 * Raise the effective CAP_SETPCAP.
+	 */
+	if (cap_set_flag(mycaps, CAP_EFFECTIVE, 1, &capflag, CAP_SET) != 0) {
+	    perror("unable to manipulate CAP_SETFCAP - try a newer libcap?");
+	    exit(1);
+	}
+	if (cap_set_proc(mycaps) != 0) {
+	    perror("unable to set CAP_SETFCAP effective capability");
+	    exit(1);
+	}
     }
 
     while (--argc > 0) {

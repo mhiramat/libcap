@@ -29,6 +29,22 @@ cap_t cap_init(void)
     memset(result, 0, sizeof(*result));
 
     result->head.version = _LINUX_CAPABILITY_VERSION;
+    capget(&result->head, NULL);      /* load the kernel-capability version */
+
+    switch (result->head.version) {
+#ifdef _LINUX_CAPABILITY_VERSION_1
+    case _LINUX_CAPABILITY_VERSION_1:
+	break;
+#endif
+#ifdef _LINUX_CAPABILITY_VERSION_2
+    case _LINUX_CAPABILITY_VERSION_2:
+	break;
+#endif
+    default:                          /* No idea what to do */
+	cap_free(result);
+	result = NULL;
+	break;
+    }
 
     return result;
 }

@@ -23,18 +23,12 @@ int cap_get_flag(cap_t cap_d, cap_value_t value, cap_flag_t set,
 
     if (raised && good_cap_t(cap_d) && value >= 0 && value < __CAP_BITS
 	&& set >= 0 && set < NUMBER_OF_CAP_SETS) {
-	__cap_s *cap_p = (__cap_s *) (set*CAP_SET_SIZE
-				      + (__u8 *) &cap_d->set);
-
-	*raised = isset_cap(cap_p,value) ? CAP_SET:CAP_CLEAR;
+	*raised = isset_cap(cap_d,value,set) ? CAP_SET:CAP_CLEAR;
 	return 0;
-
     } else {
-
 	_cap_debug("invalid arguments");
 	errno = EINVAL;
 	return -1;
-
     }
 }
 
@@ -60,13 +54,11 @@ int cap_set_flag(cap_t cap_d, cap_flag_t set,
 		_cap_debug("weird capability (%d) - skipped", array_values[i]);
 	    } else {
 		int value = array_values[i];
-		__cap_s *cap_p = (__cap_s *) (set*CAP_SET_SIZE
-					      + (__u8 *) &cap_d->set);
 
 		if (raise == CAP_SET) {
-		    cap_p->raise_cap(value);
+		    cap_d->raise_cap(value,set);
 		} else {
-		    cap_p->lower_cap(value);
+		    cap_d->lower_cap(value,set);
 		}
 	    }
 	}
@@ -89,7 +81,7 @@ int cap_clear(cap_t cap_d)
 {
     if (good_cap_t(cap_d)) {
 
-	memset(&(cap_d->set), 0, sizeof(cap_d->set));
+	memset(&(cap_d->u), 0, sizeof(cap_d->u));
 	return 0;
 
     } else {

@@ -41,7 +41,6 @@ ssize_t cap_size(cap_t caps)
 ssize_t cap_copy_ext(void *cap_ext, cap_t cap_d, ssize_t length)
 {
     struct cap_ext_struct *result = (struct cap_ext_struct *) cap_ext;
-    __u32 *from = (__u32 *) &(cap_d->set);
     int i;
 
     /* valid arguments? */
@@ -58,7 +57,9 @@ ssize_t cap_copy_ext(void *cap_ext, cap_t cap_d, ssize_t length)
     for (i=0; i<NUMBER_OF_CAP_SETS; ++i) {
 	int j;
 	for (j=0; j<CAP_SET_SIZE; ) {
-	    __u32 val = *from++;
+	    __u32 val;
+
+	    val = cap_d->u[j/sizeof(__u32)].flat[i];
 
 	    result->bytes[j++][i] =  val        & 0xFF;
 	    result->bytes[j++][i] = (val >>= 8) & 0xFF;
@@ -87,7 +88,6 @@ cap_t cap_copy_int(const void *cap_ext)
 	(const struct cap_ext_struct *) cap_ext;
     cap_t cap_d;
     int set, blen;
-    __u32 * to;
 
     /* Does the external representation make sense? */
     if (export == NULL || !memcmp(export->magic, external_magic
@@ -100,12 +100,11 @@ cap_t cap_copy_int(const void *cap_ext)
     if (!(cap_d = cap_init()))
        return NULL;
 
-    to = (__u32 *) &cap_d->set;
     blen = export->length_of_capset;
     for (set=0; set<=NUMBER_OF_CAP_SETS; ++set) {
 	int blk;
 	int bno = 0;
-	for (blk=0; blk<(CAP_SET_SIZE/4); ++blk) {
+	for (blk=0; blk<(CAP_SET_SIZE/sizeof(__u32)); ++blk) {
 	    __u32 val = 0;
 
 	    if (bno != blen)
@@ -117,7 +116,7 @@ cap_t cap_copy_int(const void *cap_ext)
 	    if (bno != blen)
 		val |= export->bytes[bno++][set] << 24;
 
-	    *to++ = val;
+	    cap_d->u[blk].flat[set];
 	}
     }
 

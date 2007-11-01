@@ -12,6 +12,11 @@
 
 #include "libcap.h"
 
+#ifdef VFS_CAP_U32
+#if VFS_CAP_U32 != __CAP_BLKS
+# error VFS representation of capabilities is not the same size as kernel
+#endif
+
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define FIXUP_32BITS(x) bswap_32(x)
 #else
@@ -21,22 +26,44 @@
 static cap_t _fcaps_load(struct vfs_cap_data *rawvfscap, cap_t result)
 {
     __u32 magic_etc;
+    unsigned tocopy, i;
 
     magic_etc = FIXUP_32BITS(rawvfscap->magic_etc);
     switch (magic_etc & VFS_CAP_REVISION_MASK) {
+#ifdef VFS_CAP_REVISION_1
     case VFS_CAP_REVISION_1:
-	result->set.inheritable =
-	    FIXUP_32BITS(rawvfscap->data[0].inheritable);
-	result->set.permitted =
-	    FIXUP_32BITS(rawvfscap->data[0].permitted);
-	if (magic_etc & VFS_CAP_FLAGS_EFFECTIVE) {
-	    result->set.effective =
-		result->set.inheritable | result->set.permitted;
-	}
+	tocopy = VFS_CAP_U32_1;
 	break;
+#endif
+
+#ifdef VFS_CAP_REVISION_2
+    case VFS_CAP_REVISION_2:
+	tocopy = VFS_CAP_U32_2;
+	break;
+#endif
+
     default:
 	cap_free(result);
 	result = NULL;
+	return result;
+    }
+
+    for (i=0; i < tocopy; i++) {
+	result->u[i].flat[CAP_INHERITABLE]
+	    = FIXUP_32BITS(rawvfscap->data[i].inheritable);
+	result->u[i].flat[CAP_PERMITTED]
+	    = FIXUP_32BITS(rawvfscap->data[i].permitted);
+	if (magic_etc & VFS_CAP_FLAGS_EFFECTIVE) {
+	    result->u[i].flat[CAP_EFFECTIVE]
+		= result->u[i].flat[CAP_INHERITABLE]
+		| result->u[i].flat[CAP_PERMITTED];
+	}
+    }
+    while (i < __CAP_BLKS) {
+	result->u[i].flat[CAP_INHERITABLE]
+	    = result->u[i].flat[CAP_PERMITTED]
+	    = result->u[i].flat[CAP_EFFECTIVE] = 0;
+	i++;
     }
 
     return result;
@@ -44,26 +71,72 @@ static cap_t _fcaps_load(struct vfs_cap_data *rawvfscap, cap_t result)
 
 static int _fcaps_save(struct vfs_cap_data *rawvfscap, cap_t cap_d)
 {
+    __u32 eff_not_zero, magic;
+    unsigned tocopy, i;
+
     if (!good_cap_t(cap_d)) {
+	errno = EINVAL;
+	return -1;
+    }
+
+    switch (cap_d->head.version) {
+#ifdef _LINUX_CAPABILITY_VERSION_1
+    case _LINUX_CAPABILITY_VERSION_1:
+	magic = VFS_CAP_REVISION_1;
+	tocopy = VFS_CAP_U32_1;
+	break;
+#endif
+
+#ifdef _LINUX_CAPABILITY_VERSION_2
+    case _LINUX_CAPABILITY_VERSION_2:
+	magic = VFS_CAP_REVISION_2;
+	tocopy = VFS_CAP_U32_2;
+	break;
+#endif
+
+    default:
 	errno = EINVAL;
 	return -1;
     }
 
     _cap_debug("setting named file capabilities");
 
-    if (cap_d->set.effective == 0) {
-	rawvfscap->magic_etc = FIXUP_32BITS(VFS_CAP_REVISION);
-    } else if ((~(cap_d->set.effective))
-	       & (cap_d->set.inheritable|cap_d->set.permitted)) {
-	errno = EINVAL;
-	return -1;
-    } else {
-	rawvfscap->magic_etc
-	    = FIXUP_32BITS(VFS_CAP_REVISION|VFS_CAP_FLAGS_EFFECTIVE);
+    for (eff_not_zero = 0, i = 0; i < tocopy; i++) {
+	eff_not_zero |= cap_d->u[i].flat[CAP_EFFECTIVE];
+    }
+    while (i < __CAP_BLKS) {
+	if ((cap_d->u[i].flat[CAP_EFFECTIVE]
+	     || cap_d->u[i].flat[CAP_INHERITABLE]
+	     || cap_d->u[i].flat[CAP_PERMITTED])) {
+	    /*
+	     * System does not support these capabilities
+	     */
+	    errno = EINVAL;
+	    return -1;
+	}
+	i++;
     }
 
-    rawvfscap->data[0].permitted = FIXUP_32BITS(cap_d->set.permitted);
-    rawvfscap->data[0].inheritable = FIXUP_32BITS(cap_d->set.inheritable);
+    for (i=0; i < tocopy; i++) {
+	rawvfscap->data[i].permitted
+	    = FIXUP_32BITS(cap_d->u[i].flat[CAP_PERMITTED]);
+	rawvfscap->data[i].inheritable
+	    = FIXUP_32BITS(cap_d->u[i].flat[CAP_INHERITABLE]);
+
+	if (eff_not_zero
+	    && ((~(cap_d->u[i].flat[CAP_EFFECTIVE]))
+		& (cap_d->u[i].flat[CAP_PERMITTED]
+		   | cap_d->u[i].flat[CAP_INHERITABLE]))) {
+	    errno = EINVAL;
+	    return -1;
+	}
+    }
+
+    if (eff_not_zero == 0) {
+	rawvfscap->magic_etc = FIXUP_32BITS(magic);
+    } else {
+	rawvfscap->magic_etc = FIXUP_32BITS(magic|VFS_CAP_FLAGS_EFFECTIVE);
+    }
 
     return 0;      /* success */
 }
@@ -89,9 +162,9 @@ cap_t cap_get_fd(int fildes)
 					   &rawvfscap, sizeof(rawvfscap))) {
 	    cap_free(result);
 	    result = NULL;
+	} else {
+	    result = _fcaps_load(&rawvfscap, result);
 	}
-
-	result = _fcaps_load(&rawvfscap, result);
     }
 
     return result;
@@ -117,9 +190,9 @@ cap_t cap_get_file(const char *filename)
 					  &rawvfscap, sizeof(rawvfscap))) {
 	    cap_free(result);
 	    result = NULL;
+	} else {
+	    result = _fcaps_load(&rawvfscap, result);
 	}
-
-	result = _fcaps_load(&rawvfscap, result);
     }
 
     return result;
@@ -166,3 +239,31 @@ int cap_set_file(const char *filename, cap_t cap_d)
     return setxattr(filename, XATTR_NAME_CAPS, &rawvfscap,
 		    sizeof(rawvfscap), 0);
 }
+
+#else /* ie. ndef VFS_CAP_U32 */
+
+cap_t cap_get_fd(int fildes)
+{
+    errno = EINVAL;
+    return NULL;
+}
+
+cap_t cap_get_file(const char *filename)
+{
+    errno = EINVAL;
+    return NULL;
+}
+
+int cap_set_fd(int fildes, cap_t cap_d)
+{
+    errno = EINVAL;
+    return -1;
+}
+
+int cap_set_file(const char *filename, cap_t cap_d)
+{
+    errno = EINVAL;
+    return -1;
+}
+
+#endif /* def VFS_CAP_U32 */
