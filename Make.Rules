@@ -40,8 +40,8 @@ LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
 
 # common defines for libcap
 LIBTITLE=libcap
-VERSION=1
-MINOR=99
+VERSION=2
+MINOR=00
 #
 
 # Compilation specifics
@@ -56,7 +56,7 @@ WARNINGS=-fPIC -Wall -Wwrite-strings \
 LD=$(CC) -Wl,-x -shared
 LDFLAGS=#-g
 
-KERNEL_HEADERS = /usr/include
+KERNEL_HEADERS = $(topdir)/libcap/include
 SYSTEM_HEADERS = /usr/include
 IPATH += -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
 INCS=$(topdir)/libcap/include/sys/capability.h

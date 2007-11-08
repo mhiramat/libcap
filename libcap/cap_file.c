@@ -13,6 +13,7 @@
 #include "libcap.h"
 
 #ifdef VFS_CAP_U32
+
 #if VFS_CAP_U32 != __CAP_BLKS
 # error VFS representation of capabilities is not the same size as kernel
 #endif
@@ -23,7 +24,8 @@
 #define FIXUP_32BITS(x) (x)
 #endif
 
-static cap_t _fcaps_load(struct vfs_cap_data *rawvfscap, cap_t result)
+static cap_t _fcaps_load(struct vfs_cap_data *rawvfscap, cap_t result,
+			 int bytes)
 {
     __u32 magic_etc;
     unsigned tocopy, i;
@@ -33,16 +35,27 @@ static cap_t _fcaps_load(struct vfs_cap_data *rawvfscap, cap_t result)
 #ifdef VFS_CAP_REVISION_1
     case VFS_CAP_REVISION_1:
 	tocopy = VFS_CAP_U32_1;
+	bytes -= XATTR_CAPS_SZ_1;
 	break;
 #endif
 
 #ifdef VFS_CAP_REVISION_2
     case VFS_CAP_REVISION_2:
 	tocopy = VFS_CAP_U32_2;
+	bytes -= XATTR_CAPS_SZ_2;
 	break;
 #endif
 
     default:
+	cap_free(result);
+	result = NULL;
+	return result;
+    }
+
+    /*
+     * Verify that we loaded exactly the right number of bytes
+     */
+    if (bytes != 0) {
 	cap_free(result);
 	result = NULL;
 	return result;
@@ -154,16 +167,18 @@ cap_t cap_get_fd(int fildes)
     result = cap_init();
     if (result) {
 	struct vfs_cap_data rawvfscap;
+	int sizeofcaps;
 
 	_cap_debug("getting fildes capabilities");
 
 	/* fill the capability sets via a system call */
-	if (sizeof(rawvfscap) != fgetxattr(fildes, XATTR_NAME_CAPS,
-					   &rawvfscap, sizeof(rawvfscap))) {
+	sizeofcaps = fgetxattr(fildes, XATTR_NAME_CAPS,
+			       &rawvfscap, sizeof(rawvfscap));
+	if (sizeofcaps < sizeof(rawvfscap.magic_etc)) {
 	    cap_free(result);
 	    result = NULL;
 	} else {
-	    result = _fcaps_load(&rawvfscap, result);
+	    result = _fcaps_load(&rawvfscap, result, sizeofcaps);
 	}
     }
 
@@ -182,16 +197,18 @@ cap_t cap_get_file(const char *filename)
     result = cap_init();
     if (result) {
 	struct vfs_cap_data rawvfscap;
+	int sizeofcaps;
 
 	_cap_debug("getting filename capabilities");
 
 	/* fill the capability sets via a system call */
-	if (sizeof(rawvfscap) != getxattr(filename, XATTR_NAME_CAPS,
-					  &rawvfscap, sizeof(rawvfscap))) {
+	sizeofcaps = getxattr(filename, XATTR_NAME_CAPS,
+			      &rawvfscap, sizeof(rawvfscap));
+	if (sizeofcaps < sizeof(rawvfscap.magic_etc)) {
 	    cap_free(result);
 	    result = NULL;
 	} else {
-	    result = _fcaps_load(&rawvfscap, result);
+	    result = _fcaps_load(&rawvfscap, result, sizeofcaps);
 	}
     }
 

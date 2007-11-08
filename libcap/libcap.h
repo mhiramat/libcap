@@ -60,12 +60,13 @@
  */
 
 #ifndef _LINUX_CAPABILITY_U32S
-# define _LINUX_CAPABILITY_U32S           1
+# define _LINUX_CAPABILITY_U32S          1
 #endif /* ndef _LINUX_CAPABILITY_U32S */
 
 #if defined(VFS_CAP_REVISION_MASK) && !defined(VFS_CAP_U32)
-# define VFS_CAP_U32_1                    1
-# define VFS_CAP_U32                      VFS_CAP_U32_1
+# define VFS_CAP_U32_1                   1
+# define XATTR_CAPS_SZ_1                 (sizeof(__le32)*(1 + 2*VFS_CAP_U32_1))
+# define VFS_CAP_U32                     VFS_CAP_U32_1
 struct _cap_vfs_cap_data {
     __le32 magic_etc;
     struct {
@@ -73,7 +74,7 @@ struct _cap_vfs_cap_data {
 	__le32 inheritable;
     } data[VFS_CAP_U32_1];
 };
-# define vfs_cap_data                     _cap_vfs_cap_data
+# define vfs_cap_data                    _cap_vfs_cap_data
 #endif
 
 #ifndef CAP_TO_INDEX
