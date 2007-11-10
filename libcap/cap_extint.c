@@ -116,7 +116,7 @@ cap_t cap_copy_int(const void *cap_ext)
 	    if (bno != blen)
 		val |= export->bytes[bno++][set] << 24;
 
-	    cap_d->u[blk].flat[set];
+	    cap_d->u[blk].flat[set] = val;
 	}
     }
 
