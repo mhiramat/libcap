@@ -22,7 +22,7 @@ MANS = $(MAN2S) $(MAN3S) $(MAN8S)
 all: $(MANS)
 
 install:
-	mkdir -p -m 755 $(MANDIR)/man2 $(MANDIR)/man3
+	mkdir -p -m 755 $(MANDIR)/man2 $(MANDIR)/man3 $(MANDIR)/man8
 	for man in \
 		$(MANDIR)/man2 $(MAN2S) \
 		$(MANDIR)/man3 $(MAN3S) \
