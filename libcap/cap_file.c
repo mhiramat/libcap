@@ -82,7 +82,8 @@ static cap_t _fcaps_load(struct vfs_cap_data *rawvfscap, cap_t result,
     return result;
 }
 
-static int _fcaps_save(struct vfs_cap_data *rawvfscap, cap_t cap_d)
+static int _fcaps_save(struct vfs_cap_data *rawvfscap, cap_t cap_d,
+		       int *bytes_p)
 {
     __u32 eff_not_zero, magic;
     unsigned tocopy, i;
@@ -97,6 +98,7 @@ static int _fcaps_save(struct vfs_cap_data *rawvfscap, cap_t cap_d)
     case _LINUX_CAPABILITY_VERSION_1:
 	magic = VFS_CAP_REVISION_1;
 	tocopy = VFS_CAP_U32_1;
+	*bytes_p = XATTR_CAPS_SZ_1;
 	break;
 #endif
 
@@ -104,6 +106,7 @@ static int _fcaps_save(struct vfs_cap_data *rawvfscap, cap_t cap_d)
     case _LINUX_CAPABILITY_VERSION_2:
 	magic = VFS_CAP_REVISION_2;
 	tocopy = VFS_CAP_U32_2;
+	*bytes_p = XATTR_CAPS_SZ_2;
 	break;
 #endif
 
@@ -223,18 +226,18 @@ cap_t cap_get_file(const char *filename)
 int cap_set_fd(int fildes, cap_t cap_d)
 {
     struct vfs_cap_data rawvfscap;
+    int sizeofcaps;
 
     if (cap_d == NULL) {
 	_cap_debug("deleting fildes capabilities");
 	return fremovexattr(fildes, XATTR_NAME_CAPS);
-    } else if (_fcaps_save(&rawvfscap, cap_d) != 0) {
+    } else if (_fcaps_save(&rawvfscap, cap_d, &sizeofcaps) != 0) {
 	return -1;
     }
 
     _cap_debug("setting fildes capabilities");
 
-    return fsetxattr(fildes, XATTR_NAME_CAPS, &rawvfscap,
-		     sizeof(rawvfscap), 0);
+    return fsetxattr(fildes, XATTR_NAME_CAPS, &rawvfscap, sizeofcaps, 0);
 }
 
 /*
@@ -244,17 +247,17 @@ int cap_set_fd(int fildes, cap_t cap_d)
 int cap_set_file(const char *filename, cap_t cap_d)
 {
     struct vfs_cap_data rawvfscap;
+    int sizeofcaps;
 
     if (cap_d == NULL) {
 	_cap_debug("removing filename capabilities");
 	return removexattr(filename, XATTR_NAME_CAPS);
-    } else if (_fcaps_save(&rawvfscap, cap_d) != 0) {
+    } else if (_fcaps_save(&rawvfscap, cap_d, &sizeofcaps) != 0) {
 	return -1;
     }
 
     _cap_debug("setting filename capabilities");
-    return setxattr(filename, XATTR_NAME_CAPS, &rawvfscap,
-		    sizeof(rawvfscap), 0);
+    return setxattr(filename, XATTR_NAME_CAPS, &rawvfscap, sizeofcaps, 0);
 }
 
 #else /* ie. ndef VFS_CAP_U32 */
