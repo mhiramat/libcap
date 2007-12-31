@@ -16,6 +16,8 @@ static void usage(void)
     fprintf(stderr,
 	    "usage: setcap [-q] (-r|-|<caps>) <filename> "
 	    "[ ... (-r|-|<capsN>) <filenameN> ]\n"
+	    "\n"
+	    " Note <filename> must be a regular (non-symlink) file.\n"
 	);
     exit(1);
 }

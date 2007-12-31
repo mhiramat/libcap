@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <attr/xattr.h>
 #include <byteswap.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define XATTR_SECURITY_PREFIX "security."
 
@@ -227,6 +229,17 @@ int cap_set_fd(int fildes, cap_t cap_d)
 {
     struct vfs_cap_data rawvfscap;
     int sizeofcaps;
+    struct stat buf;
+
+    if (fstat(fildes, &buf) != 0) {
+	_cap_debug("unable to stat file descriptor %d", fildes);
+	return -1;
+    }
+    if (S_ISLNK(buf.st_mode) || !S_ISREG(buf.st_mode)) {
+	_cap_debug("file descriptor %d for non-regular file", fildes);
+	errno = EINVAL;
+	return -1;
+    }
 
     if (cap_d == NULL) {
 	_cap_debug("deleting fildes capabilities");
@@ -248,6 +261,17 @@ int cap_set_file(const char *filename, cap_t cap_d)
 {
     struct vfs_cap_data rawvfscap;
     int sizeofcaps;
+    struct stat buf;
+
+    if (lstat(filename, &buf) != 0) {
+	_cap_debug("unable to stat file [%s]", filename);
+	return -1;
+    }
+    if (S_ISLNK(buf.st_mode) || !S_ISREG(buf.st_mode)) {
+	_cap_debug("file [%s] is not a regular file", filename);
+	errno = EINVAL;
+	return -1;
+    }
 
     if (cap_d == NULL) {
 	_cap_debug("removing filename capabilities");
