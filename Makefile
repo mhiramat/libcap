@@ -10,7 +10,9 @@ include Make.Rules
 
 all install clean: %: %-here
 	$(MAKE) -C libcap $(MAKE_DEFS) $@
+ifneq ($(PAM_CAP),no)
 	$(MAKE) -C pam_cap $(MAKE_DEFS) $@
+endif
 	$(MAKE) -C progs $(MAKE_DEFS) $@
 	$(MAKE) -C doc $(MAKE_DEFS) $@
 

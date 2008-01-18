@@ -62,7 +62,7 @@ IPATH += -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
 INCS=$(topdir)/libcap/include/sys/capability.h
 LIBS=-L$(topdir)/libcap -lcap
 CFLAGS=-Dlinux $(WARNINGS) $(DEBUG) $(COPTFLAG) $(IPATH)
-
+PAM_CAP ?= $(shell if [ -f /usr/include/security/pam_modules.h ]; then echo yes ; else echo no ; fi)
 # Global cleanup stuff
 
 LOCALCLEAN=rm -f *~ core
