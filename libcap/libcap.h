@@ -158,4 +158,12 @@ extern int capget(cap_user_header_t header, const cap_user_data_t data);
 extern int capgetp(pid_t pid, cap_t cap_d);
 extern int capsetp(pid_t pid, cap_t cap_d);
 
+/* prctl based API for altering character of current process */
+#define PR_GET_KEEPCAPS    7
+#define PR_SET_KEEPCAPS    8
+#define PR_CAPBSET_READ   23
+#define PR_CAPBSET_DROP   24
+#define PR_GET_SECUREBITS 25
+#define PR_SET_SECUREBITS 26
+
 #endif /* LIBCAP_H */
