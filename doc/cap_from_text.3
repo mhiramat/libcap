@@ -1,16 +1,19 @@
 .\"
-.\" $Id: cap_from_text.3,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
 .\" written by Andrew Main <zefram@dcs.warwick.ac.uk>
 .\"
-.TH CAP_FROM_TEXT 3 "26th May 1997" "" "Linux Programmer's Manual"
+.TH CAP_FROM_TEXT 3 "21th Jan 2008" "" "Linux Programmer's Manual"
 .SH NAME
-cap_from_text, cap_to_text, _cap_names \- capability state textual representation translation
+cap_from_text, cap_to_text, cap_to_name, cap_from_name, _cap_names \- capability state textual representation translation
 .SH SYNOPSIS
 .B #include <sys/capability.h>
 .sp
 .BI "cap_t cap_from_text(const char *" buf_p );
 .sp
 .BI "char *cap_to_text(cap_t " caps ", ssize_t *" length_p );
+.sp
+.BI "int cap_from_text(const char *" name ", cap_value_t *" cap_p );
+.sp
+.BI "char *cap_to_text(cap_value_t " cap );
 .sp
 .B extern char const *_cap_names[];
 .SH USAGE
@@ -44,9 +47,9 @@ is both set and cleared within a single clause.
 .B cap_to_text
 converts the capability state in working storage identified by
 .I cap_p
-into a null terminated human-readable string.  This function allocates any
-memory necessary to contain the string, and returns a pointer to the string.  If
-the pointer
+into a null terminated human-readable string.  This function allocates
+any memory necessary to contain the string, and returns a pointer to
+the string.  If the pointer
 .I len_p
 is not
 .BR NULL ,
@@ -62,6 +65,26 @@ storage is no longer required, by calling
 with
 .B cap_p
 as an argument.
+.PP
+.B cap_from_name
+converts a text representation of a capability, such as "cap_chown",
+to its numerical representation (
+.B CAP_CHOWN=0
+). Writing the decoded value into
+.B *cap_p.
+If
+.B cap_p
+is
+.B NULL
+no result is written, but the return code of the function indicates
+whether or not the specified capability can be represented by the
+library.
+.PP
+.B cap_to_text
+converts a capability index value,
+.B cap ,
+to a libcap allocated textual string. This string should be deallocated with
+.B "cap_free" .
 .PP
 .B _cap_names
 is an array of textual names for capability numbers.  Unnamed capabilities
@@ -95,8 +118,10 @@ special name
 specifies all capabilities; it is equivalent to a list naming every
 capability individually.
 .PP
-Although not defined by POSIX, unnamed capabilities can be specified
-by number.
+Unnamed capabilities can also be specified by number. This feature
+ensures that libcap can support capabilities that were not allocated
+at the time libcap was compiled. However, generally upgrading libcap
+will add names for recently allocated capabilities.
 .PP
 The
 .RB ` = '
@@ -127,10 +152,13 @@ will raise the override-file-ownership capability in the Permitted
 capability set and lower this Inheritable capability;
 "cap_fowner+pe-i" and "cap_fowner=+pe" are equivalent.
 .SH "RETURN VALUE"
-.B cap_from_text
+.B "cap_from_text" ,
+.B cap_to_text
 and
 .B cap_to_text
 return a non-NULL value on success, and NULL on failure.
+.B cap_from_text
+returns 0 for success, and -1 on failure (unknown capability).
 .PP
 On failure,
 .BR errno (3)
@@ -142,9 +170,12 @@ or
 .B cap_from_text
 and
 .B cap_to_text
-are specified by POSIX.1e.
-.B _cap_names
-is a Linux extension.
+are specified by the withdrawn POSIX.1e draft.
+.B cap_from_name ,
+.B cap_to_name
+and
+.B "_cap_names"
+are a Linux extension.
 .SH "SEE ALSO"
 .IR cap_clear (3),
 .IR cap_copy_ext (3),

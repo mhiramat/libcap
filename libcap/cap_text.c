@@ -11,6 +11,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#include <limits.h>
 
 /* Maximum output text length (16 per cap) */
 #define CAP_TEXT_SIZE    (16*__CAP_BITS)
@@ -226,6 +227,37 @@ bad:
     res = NULL;
     errno = EINVAL;
     return res;
+}
+
+/*
+ * lookup a capability name and return its numerical value
+ */
+int cap_from_name(const char *name, cap_value_t *value_p)
+{
+    int n;
+
+    if (((n = lookupname(&name)) < 0) && (value_p != NULL)) {
+	*value_p = (unsigned) n;
+    }
+    return -(n < 0);
+}
+
+/*
+ * Convert a single capability index number into a string representation
+ */
+char *cap_to_name(cap_value_t cap)
+{
+    if ((cap < 0) || (cap >= __CAP_BITS)) {
+#if UINT_MAX != 4294967295U
+# error Recompile with correctly sized numeric array
+#endif
+	char numeric[11];
+
+	sprintf(numeric, "%u", cap);
+	return _libcap_strdup(numeric);
+    } else {
+	return _libcap_strdup(_cap_names[cap]);
+    }
 }
 
 /*

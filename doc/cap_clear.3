@@ -11,7 +11,7 @@ cap_clear, cap_get_flag, cap_set_flag \- capability data object manipulation
 .sp
 .BI "int cap_get_flag(cap_t " cap_p ", cap_value_t " cap ", cap_flag_t " flag ", cap_flag_value_t *" value_p ");"
 .sp
-.BI "int cap_set_flag(cap_t " cap_p ", cap_flag_t " flag ", int " ncap ", cap_value_t *" caps ", cap_flag_value_t " value ");"
+.BI "int cap_set_flag(cap_t " cap_p ", cap_flag_t " flag ", int " ncap ", const cap_value_t *" caps ", cap_flag_value_t " value ");"
 .SH USAGE
 .B cc ... -lcap
 .SH DESCRIPTION

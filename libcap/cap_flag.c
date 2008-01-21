@@ -37,7 +37,7 @@ int cap_get_flag(cap_t cap_d, cap_value_t value, cap_flag_t set,
  */
 
 int cap_set_flag(cap_t cap_d, cap_flag_t set,
-		 int no_values, cap_value_t *array_values,
+		 int no_values, const cap_value_t *array_values,
 		 cap_flag_value_t raise)
 {
     /*

@@ -2,7 +2,7 @@
  * <sys/capability.h>
  *
  * Copyright (C) 1997   Aleph One
- * Copyright (C) 1997-8 Andrew G. Morgan <morgan@kernel.org>
+ * Copyright (C) 1997-8,2008 Andrew G. Morgan <morgan@kernel.org>
  *
  * defunct POSIX.1e Standard: 25.2 Capabilities           <sys/capability.h>
  */
@@ -76,48 +76,42 @@ typedef enum {
  */
 
 /* libcap/cap_alloc.c */
-cap_t   cap_dup(cap_t);
-int     cap_free(void *);
-cap_t   cap_init(void);
+extern cap_t   cap_dup(cap_t);
+extern int     cap_free(void *);
+extern cap_t   cap_init(void);
 
 /* libcap/cap_flag.c */
-int     cap_get_flag(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *);
-int     cap_set_flag(cap_t, cap_flag_t, int, cap_value_t *, cap_flag_value_t);
-int     cap_clear(cap_t);
+extern int     cap_get_flag(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *);
+extern int     cap_set_flag(cap_t, cap_flag_t, int, const cap_value_t *,
+			    cap_flag_value_t);
+extern int     cap_clear(cap_t);
 
 /* libcap/cap_file.c */
-cap_t   cap_get_fd(int);
-cap_t   cap_get_file(const char *);
-int     cap_set_fd(int, cap_t);
-int     cap_set_file(const char *, cap_t);
+extern cap_t   cap_get_fd(int);
+extern cap_t   cap_get_file(const char *);
+extern int     cap_set_fd(int, cap_t);
+extern int     cap_set_file(const char *, cap_t);
 
 /* libcap/cap_proc.c */
-cap_t   cap_get_proc(void);
-int     cap_set_proc(cap_t);
+extern cap_t   cap_get_proc(void);
+extern int     cap_set_proc(cap_t);
 
 /* libcap/cap_extint.c */
-ssize_t cap_size(cap_t);
-ssize_t cap_copy_ext(void *, cap_t, ssize_t);
-cap_t   cap_copy_int(const void *);
+extern ssize_t cap_size(cap_t);
+extern ssize_t cap_copy_ext(void *, cap_t, ssize_t);
+extern cap_t   cap_copy_int(const void *);
 
 /* libcap/cap_text.c */
-cap_t   cap_from_text(const char *);
-char *  cap_to_text(cap_t, ssize_t *);
-
-/*
- * Linux capability system calls: defined in libcap but only available
- * if the following _POSIX_SOURCE is _undefined_
- */
-
-#if !defined(_POSIX_SOURCE)
+extern cap_t   cap_from_text(const char *);
+extern char *  cap_to_text(cap_t, ssize_t *);
+extern int     cap_from_name(const char *, cap_value_t *);
+extern char *  cap_to_name(cap_value_t);
 
 extern int capset(cap_user_header_t header, cap_user_data_t data);
 extern int capget(cap_user_header_t header, const cap_user_data_t data);
 extern int capgetp(pid_t pid, cap_t cap_d);
 extern int capsetp(pid_t pid, cap_t cap_d);
 extern char const *_cap_names[];
-
-#endif /* !defined(_POSIX_SOURCE) */
 
 #ifdef __cplusplus
 }
