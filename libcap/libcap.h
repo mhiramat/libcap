@@ -98,6 +98,9 @@ struct _cap_struct {
     } u[_LINUX_CAPABILITY_U32S];
 };
 
+/* the maximum bits supportable */
+#define __CAP_MAXBITS (__CAP_BLKS * 32)
+
 /* string magic for cap_free */
 #define CAP_S_MAGIC 0xCA95D0
 

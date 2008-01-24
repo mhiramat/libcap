@@ -108,7 +108,7 @@ int main(int argc, char *argv[], char *envp[])
 		perror("Fatal error concerning process capabilities");
 		exit(1);
 	    }
-	    ptr = malloc(4 + strlen(argv[i]+6) + strlen(text));
+	    ptr = malloc(10 + strlen(argv[i]+6) + strlen(text));
 	    if (ptr == NULL) {
 		perror("Out of memory for inh set\n");
 		exit(1);

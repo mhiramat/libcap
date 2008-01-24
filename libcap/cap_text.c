@@ -14,7 +14,7 @@
 #include <limits.h>
 
 /* Maximum output text length (16 per cap) */
-#define CAP_TEXT_SIZE    (16*__CAP_BITS)
+#define CAP_TEXT_SIZE    (16*__CAP_MAXBITS)
 
 #define LIBCAP_EFF   01
 #define LIBCAP_INH   02
@@ -72,7 +72,7 @@ static int lookupname(char const **strp)
     str.constp = *strp;
     if (isdigit(*str.constp)) {
 	unsigned long n = strtoul(str.constp, &str.p, 0);
-	if (n >= __CAP_BITS)
+	if (n >= __CAP_MAXBITS)
 	    return -1;
 	*strp = str.constp;
 	return n;
@@ -290,7 +290,8 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
     static char buf[CAP_TEXT_SIZE+CAP_TEXT_BUFFER_ZONE];
     char *p;
     int histo[8] = {0};
-    int m, n, t;
+    int m, t;
+    unsigned n;
 
     /* Check arguments */
     if (!good_cap_t(caps)) {
@@ -302,7 +303,7 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
     _cap_debugcap("i = ", *caps, CAP_INHERITABLE);
     _cap_debugcap("p = ", *caps, CAP_PERMITTED);
 
-    for (n = __CAP_BITS; n--; )
+    for (n = __CAP_MAXBITS; n--; )
 	histo[getstateflags(caps, n)]++;
 
     for (m=t=7; t--; )
@@ -318,12 +319,12 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
     for (t = 8; t--; )
 	if (t != m && histo[t]) {
 	    *p++ = ' ';
-	    for (n = 0; n != __CAP_BITS; n++)
+	    for (n = 0; n < __CAP_MAXBITS; n++)
 		if (getstateflags(caps, n) == t) {
-		    if (_cap_names[n])
+		    if (n < __CAP_BITS)
 			p += sprintf(p, "%s,", _cap_names[n]);
 		    else
-			p += sprintf(p, "%d,", n);
+			p += sprintf(p, "%u,", n);
 		    if (p - buf > CAP_TEXT_SIZE) {
 			errno = ERANGE;
 			return NULL;
