@@ -236,7 +236,7 @@ int cap_from_name(const char *name, cap_value_t *value_p)
 {
     int n;
 
-    if (((n = lookupname(&name)) < 0) && (value_p != NULL)) {
+    if (((n = lookupname(&name)) >= 0) && (value_p != NULL)) {
 	*value_p = (unsigned) n;
     }
     return -(n < 0);
