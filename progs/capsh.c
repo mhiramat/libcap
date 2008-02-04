@@ -15,12 +15,15 @@
 #include <sys/prctl.h>
 #include <sys/capability.h>
 #include <unistd.h>
+#include <errno.h>
 
 /* prctl based API for altering character of current process */
 #define PR_GET_KEEPCAPS    7
 #define PR_SET_KEEPCAPS    8
 #define PR_CAPBSET_READ   23
 #define PR_CAPBSET_DROP   24
+#define PR_GET_SECUREBITS 25
+#define PR_SET_SECUREBITS 26
 
 static const cap_value_t raise_setpcap[1] = { CAP_SETPCAP };
 static const cap_value_t raise_chroot[1] = { CAP_SYS_CHROOT };
@@ -97,13 +100,14 @@ int main(int argc, char *argv[], char *envp[])
 
 	    raised_for_setpcap = cap_dup(all);
 	    if ((raised_for_setpcap != NULL)
-		|| (cap_set_flag(raised_for_setpcap, CAP_EFFECTIVE, 1,
+		&& (cap_set_flag(raised_for_setpcap, CAP_EFFECTIVE, 1,
 				 raise_setpcap, CAP_SET) != 0)) {
 		cap_free(raised_for_setpcap);
 		raised_for_setpcap = NULL;
 	    }
 
 	    text = cap_to_text(all, NULL);
+	    cap_free(all);
 	    if (text == NULL) {
 		perror("Fatal error concerning process capabilities");
 		exit(1);
@@ -114,7 +118,6 @@ int main(int argc, char *argv[], char *envp[])
 		exit(1);
 	    }
 	    sprintf(ptr, "%s all-i %s+i", text, argv[i]+6);
-	    cap_free(all);
 
 	    all = cap_from_text(ptr);
 	    if (all == NULL) {
@@ -145,6 +148,17 @@ int main(int argc, char *argv[], char *envp[])
 	     */
 
 	    cap_free(all);
+	} else if (!memcmp("--keep=", argv[i], 7)) {
+	    unsigned value;
+	    int set;
+
+	    value = strtoul(argv[i]+7, NULL, 0);
+	    set = prctl(PR_SET_KEEPCAPS, value);
+	    if (set < 0) {
+		fprintf(stderr, "prctl(PR_SET_KEEPCAPS, %u) failed: %s\n",
+			value, strerror(errno));
+		exit(1);
+	    }
 	} else if (!memcmp("--chroot=", argv[i], 9)) {
 	    int status;
 	    cap_t orig, raised_for_chroot;
@@ -184,6 +198,28 @@ int main(int argc, char *argv[], char *envp[])
 		fprintf(stderr, "Unable to chroot to [%s]", argv[i]+9);
 		exit(1);
 	    }
+	} else if (!memcmp("--secbits=", argv[i], 10)) {
+	    unsigned value;
+	    int status;
+
+	    value = strtoul(argv[i]+10, NULL, 0);
+	    status = prctl(PR_SET_SECUREBITS, value);
+	    if (status < 0) {
+		fprintf(stderr, "failed to set securebits to 0%o/0x%x\n",
+			value, value);
+		exit(1);
+	    }
+	} else if (!memcmp("--uid=", argv[i], 6)) {
+	    unsigned value;
+	    int status;
+
+	    value = strtoul(argv[i]+6, NULL, 0);
+	    status = setuid(value);
+	    if (status < 0) {
+		fprintf(stderr, "Failed to set uid=%u: %s\n",
+			value, strerror(errno));
+		exit(1);
+	    }
 	} else if (!strcmp("--print", argv[i])) {
 	    unsigned cap;
 	    int set;
@@ -199,7 +235,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	    printf("Bounding set =");
  	    sep = "";
-	    for (cap=0; (set = prctl(PR_CAPBSET_READ, cap)) != -1; cap++) {
+	    for (cap=0; (set = prctl(PR_CAPBSET_READ, cap)) >= 0; cap++) {
 		const char *ptr;
 		if (!set) {
 		    continue;
@@ -214,6 +250,29 @@ int main(int argc, char *argv[], char *envp[])
 		sep = ",";
 	    }
 	    printf("\n");
+	    set = prctl(PR_GET_SECUREBITS);
+	    if (set >= 0) {
+		printf("Securebits: 0%o/0x%x\n", set, set);
+		printf(" secure-noroot: %s (%s)\n",
+		       (set & 1) ? "yes":"no",
+		       (set & 2) ? "locked":"unlocked");
+		printf(" secure-no-suid-fixup: %s (%s)\n",
+		       (set & 4) ? "yes":"no",
+		       (set & 8) ? "locked":"unlocked");
+		printf(" secure-keep-caps: %s (%s)\n",
+		       (set & 16) ? "yes":"no",
+		       (set & 32) ? "locked":"unlocked");
+	    } else {
+		printf("[Securebits ABI not supported]\n");
+		set = prctl(PR_GET_KEEPCAPS);
+		if (set >= 0) {
+		    printf(" prctl-keep-caps: %s (locking not supported)\n",
+			   set ? "yes":"no");
+		} else {
+		    printf("[Keepcaps ABI not supported]\n");
+		}
+	    }
+	    printf("uid=%u\n", getuid());
 	} else if (!strcmp("--", argv[i])) {
 	    argv[i] = strdup("/bin/bash");
 	    argv[argc] = NULL;
@@ -226,6 +285,9 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --print        display capability relevant state\n"
 		   "  --drop=xxx     remove xxx,.. capabilities from bset\n"
 		   "  --inh=xxx      set xxx,.. inheritiable set\n"
+		   "  --secbits=<n>  write a new value for securebits\n"
+		   "  --keep=<n>     set keep-capabability bit to <n>\n"
+		   "  --uid=<n>      set uid to <n> (hint: id <username>)\n"
 		   "  --chroot=path  chroot(2) to this path to invoke bash\n"
 		   "  --             remaing arguments are for /bin/bash\n"
 		   "                 (without -- [%s] will simply exit(0))\n",
