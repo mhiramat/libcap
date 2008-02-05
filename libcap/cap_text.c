@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-8,2007 Andrew G Morgan <morgan@kernel.org>
+ * Copyright (c) 1997-8,2007-8 Andrew G Morgan <morgan@kernel.org>
  * Copyright (c) 1997 Andrew Main <zefram@dcs.warwick.ac.uk>
  *
  * This file deals with exchanging internal and textual
@@ -77,6 +77,22 @@ static int lookupname(char const **strp)
 	*strp = str.constp;
 	return n;
     } else {
+#ifdef GPERF_DOWNCASE
+	const struct __cap_token_s *token_info;
+	int c;
+	unsigned len;
+
+	for (len=0; (c = str.constp[len]); ++len) {
+	    if (!(isalpha(c) || (c == '_'))) {
+		break;
+	    }
+	}
+	token_info = __cap_lookup_name(str.constp, len);
+	if (token_info != NULL) {
+	    *strp = str.constp + len;
+	    return token_info->index;
+	}
+#else /* ie., ndef GPERF_DOWNCASE */
 	char const *s;
 	int n;
 	for (n = __CAP_BITS; n--; )
@@ -84,7 +100,9 @@ static int lookupname(char const **strp)
 		*strp = s;
 		return n;
 	    }
-	return -1;
+#endif /* def GPERF_DOWNCASE */
+
+	return -1;   	/* No definition available */
     }
 }
 

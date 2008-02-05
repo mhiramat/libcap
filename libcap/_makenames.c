@@ -14,11 +14,11 @@
  */
 
 struct {
-    int index;
     const char *name;
+    int index;
 } const list[] = {
 #include "cap_names.sed"
-    {-1, NULL}
+    {NULL, -1}
 };
 
 /* this should be more than big enough (factor of three at least) */

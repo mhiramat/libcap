@@ -67,3 +67,5 @@ fail_capsh --drop=cap_net_raw,cap_chown --secbits=0x2f --print -- -c "./ping -c1
 
 pass_capsh --secbits=47 --inh=cap_net_raw --drop=cap_net_raw \
     --uid=500 --print -- -c "./ping -c1 localhost"
+
+rm -f ./ping
