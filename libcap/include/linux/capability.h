@@ -152,7 +152,9 @@ typedef struct kernel_cap_struct {
  *   Transfer any capability in your permitted set to any pid,
  *   remove any capability in your permitted set from any pid
  * With VFS support for capabilities (neither of above, but)
- *   Add any capability to the current process' inheritable set
+ *   Add any capability from current's capability bounding set
+ *       to the current process' inheritable set
+ *   Allow taking bits out of capability bounding set
  */
 
 #define CAP_SETPCAP          8
@@ -202,7 +204,6 @@ typedef struct kernel_cap_struct {
 #define CAP_IPC_OWNER        15
 
 /* Insert and remove kernel modules - modify kernel without limit */
-/* Modify cap_bset */
 #define CAP_SYS_MODULE       16
 
 /* Allow ioperm/iopl access */
@@ -331,6 +332,10 @@ typedef struct kernel_cap_struct {
 
 #define CAP_MAC_ADMIN        33
 
+#define CAP_LAST_CAP         CAP_MAC_ADMIN
+
+#define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
+
 /*
  * Bit location of each capability (used by user-space library and kernel)
  */
@@ -345,13 +350,13 @@ typedef struct kernel_cap_struct {
  */
 
 #define CAP_FOR_EACH_U32(__capi)  \
-	for (__capi=0; __capi<_LINUX_CAPABILITY_U32S; ++__capi)
+	for (__capi = 0; __capi < _LINUX_CAPABILITY_U32S; ++__capi)
 
-# define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)             \
-			    |CAP_TO_MASK(CAP_DAC_OVERRIDE)      \
-			    |CAP_TO_MASK(CAP_DAC_READ_SEARCH)   \
-			    |CAP_TO_MASK(CAP_FOWNER)            \
-			    |CAP_TO_MASK(CAP_FSETID))
+# define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
+			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
+			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
+			    | CAP_TO_MASK(CAP_FOWNER)		\
+			    | CAP_TO_MASK(CAP_FSETID))
 
 # define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
 
@@ -362,9 +367,9 @@ typedef struct kernel_cap_struct {
 # define CAP_EMPTY_SET    {{ 0, 0 }}
 # define CAP_FULL_SET     {{ ~0, ~0 }}
 # define CAP_INIT_EFF_SET {{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }}
-# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 }}
+# define CAP_FS_SET       {{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } }
 # define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
-			     CAP_FS_MASK_B1 }}
+			     CAP_FS_MASK_B1 } }
 
 #endif /* _LINUX_CAPABILITY_U32S != 2 */
 
@@ -374,9 +379,9 @@ typedef struct kernel_cap_struct {
 # define cap_set_full(c)      do { (c) = __cap_full_set; } while (0)
 # define cap_set_init_eff(c)  do { (c) = __cap_init_eff_set; } while (0)
 
-#define cap_raise(c,flag)  ((c).cap[CAP_TO_INDEX(flag)] |= CAP_TO_MASK(flag))
-#define cap_lower(c,flag)  ((c).cap[CAP_TO_INDEX(flag)] &= ~CAP_TO_MASK(flag))
-#define cap_raised(c,flag) ((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
+#define cap_raise(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] |= CAP_TO_MASK(flag))
+#define cap_lower(c, flag)  ((c).cap[CAP_TO_INDEX(flag)] &= ~CAP_TO_MASK(flag))
+#define cap_raised(c, flag) ((c).cap[CAP_TO_INDEX(flag)] & CAP_TO_MASK(flag))
 
 #define CAP_BOP_ALL(c, a, b, OP)                                    \
 do {                                                                \
@@ -429,9 +434,8 @@ static inline int cap_isclear(const kernel_cap_t a)
 {
 	unsigned __capi;
 	CAP_FOR_EACH_U32(__capi) {
-		if (a.cap[__capi] != 0) {
+		if (a.cap[__capi] != 0)
 			return 0;
-		}
 	}
 	return 1;
 }
@@ -485,6 +489,8 @@ extern const kernel_cap_t __cap_init_eff_set;
 
 int capable(int cap);
 int __capable(struct task_struct *t, int cap);
+
+extern long cap_prctl_drop(unsigned long cap);
 
 #endif /* __KERNEL__ */
 

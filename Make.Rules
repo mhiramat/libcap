@@ -1,8 +1,4 @@
 #
-# $Id: Make.Rules,v 1.5 1999/11/18 06:06:02 morgan Exp $
-#
-
-#
 ## Optional prefixes:
 #
 
@@ -41,7 +37,7 @@ LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
 # common defines for libcap
 LIBTITLE=libcap
 VERSION=2
-MINOR=05
+MINOR=06
 #
 
 # Compilation specifics
