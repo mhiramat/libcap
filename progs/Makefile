@@ -17,7 +17,7 @@ $(PROGS): %: %.o
 install: all
 	mkdir -p -m 0755 $(SBINDIR)
 	for p in $(PROGS) ; do \
-		install -s -m 0755 $$p $(SBINDIR) ; \
+		install -m 0755 $$p $(SBINDIR) ; \
 	done
 
 clean:
