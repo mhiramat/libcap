@@ -40,8 +40,8 @@ cap_names.sed: Makefile $(KERNEL_HEADERS)/linux/capability.h
 	@sed -ne '/^#define[ \t]CAP[_A-Z]\+[ \t]\+[0-9]\+/{s/^#define \([^ \t]*\)[ \t]*\([^ \t]*\)/\{\"\1\",\2\},/;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;p;}' < $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
 
 $(STALIBNAME): $(OBJS)
-	ar rcs $(STALIBNAME) $(OBJS)
-	ranlib $(STALIBNAME)
+	$(AR) rcs $(STALIBNAME) $(OBJS)
+	$(RANLIB) $(STALIBNAME)
 
 $(MINLIBNAME): $(OBJS)
 	$(LD) $(LDFLAGS) $(COPTFLAG) -Wl,-soname,$(MAJLIBNAME) -o $@ $(OBJS)

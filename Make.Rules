@@ -42,7 +42,9 @@ MINOR=06
 
 # Compilation specifics
 
-CC=gcc
+CC ?= gcc
+AR ?= ar
+RANLIB ?= ranlib
 COPTFLAGS=-O2
 DEBUG=-O2 -g #-DDEBUG
 WARNINGS=-fPIC -Wall -Wwrite-strings \
