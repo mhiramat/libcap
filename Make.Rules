@@ -4,7 +4,7 @@
 
 # common 'packaging' directoty
 
-FAKEROOT=
+FAKEROOT=$(DESTDIR)
 
 # Autoconf-style prefixes are activated when $(prefix) is defined.
 # Otherwise binaries and libraraies are installed in /{lib,sbin}/,
