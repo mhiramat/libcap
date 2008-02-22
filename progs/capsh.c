@@ -16,6 +16,7 @@
 #include <sys/capability.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 /* prctl based API for altering character of current process */
 #define PR_GET_KEEPCAPS    7
@@ -30,7 +31,10 @@ static const cap_value_t raise_chroot[1] = { CAP_SYS_CHROOT };
 
 int main(int argc, char *argv[], char *envp[])
 {
+    pid_t child;
     unsigned i;
+
+    child = 0;
 
     for (i=1; i<argc; ++i) {
 	if (!memcmp("--drop=", argv[i], 4)) {
@@ -87,7 +91,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	    cap_free(raised_for_setpcap);
 	    cap_free(orig);
-	} else if (!memcmp("--inh=", argv[i], 4)) {
+	} else if (!memcmp("--inh=", argv[i], 6)) {
 	    cap_t all, raised_for_setpcap;
 	    char *text;
 	    char *ptr;
@@ -114,7 +118,7 @@ int main(int argc, char *argv[], char *envp[])
 	    }
 	    ptr = malloc(10 + strlen(argv[i]+6) + strlen(text));
 	    if (ptr == NULL) {
-		perror("Out of memory for inh set\n");
+		perror("Out of memory for inh set");
 		exit(1);
 	    }
 	    sprintf(ptr, "%s all-i %s+i", text, argv[i]+6);
@@ -148,6 +152,49 @@ int main(int argc, char *argv[], char *envp[])
 	     */
 
 	    cap_free(all);
+	} else if (!memcmp("--caps=", argv[i], 7)) {
+	    cap_t all, raised_for_setpcap;
+
+	    raised_for_setpcap = cap_get_proc();
+	    if (raised_for_setpcap == NULL) {
+		perror("Capabilities not available");
+		exit(1);
+	    }
+
+	    if ((raised_for_setpcap != NULL)
+		&& (cap_set_flag(raised_for_setpcap, CAP_EFFECTIVE, 1,
+				 raise_setpcap, CAP_SET) != 0)) {
+		cap_free(raised_for_setpcap);
+		raised_for_setpcap = NULL;
+	    }
+
+	    all = cap_from_text(argv[i]+7);
+	    if (all == NULL) {
+		fprintf(stderr, "unable to interpret [%s]\n", argv[i]);
+		exit(1);
+	    }
+
+	    if (raised_for_setpcap != NULL) {
+		/*
+		 * This is only for the case that pP does not contain
+		 * the requested change to pI.. Failing here is not
+		 * indicative of the cap_set_proc(all) failing (always).
+		 */
+		(void) cap_set_proc(raised_for_setpcap);
+		cap_free(raised_for_setpcap);
+		raised_for_setpcap = NULL;
+	    }
+
+	    if (cap_set_proc(all) != 0) {
+		fprintf(stderr, "Unable to set capabilities [%s]\n", argv[i]);
+		exit(1);
+	    }
+	    /*
+	     * Since status is based on orig, we don't want to restore
+	     * the previous value of 'all' again here!
+	     */
+
+	    cap_free(all);
 	} else if (!memcmp("--keep=", argv[i], 7)) {
 	    unsigned value;
 	    int set;
@@ -165,7 +212,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	    orig = cap_get_proc();
 	    if (orig == NULL) {
-		perror("Capabilities not available.");
+		perror("Capabilities not available");
 		exit(1);
 	    }
 
@@ -207,6 +254,46 @@ int main(int argc, char *argv[], char *envp[])
 	    if (status < 0) {
 		fprintf(stderr, "failed to set securebits to 0%o/0x%x\n",
 			value, value);
+		exit(1);
+	    }
+	} else if (!memcmp("--forkfor=", argv[i], 10)) {
+	    unsigned value;
+
+	    value = strtoul(argv[i]+10, NULL, 0);
+	    if (value == 0) {
+		goto usage;
+	    }
+	    child = fork();
+	    if (child < 0) {
+		perror("unable to fork()");
+	    } else if (!child) {
+		sleep(value);
+		exit(0);
+	    }
+	} else if (!memcmp("--killit=", argv[i], 9)) {
+	    int retval, status;
+	    pid_t result;
+	    unsigned value;
+
+	    value = strtoul(argv[i]+9, NULL, 0);
+	    if (!child) {
+		fprintf(stderr, "no forked process to kill\n");
+		exit(1);
+	    }
+	    retval = kill(child, value);
+	    if (retval != 0) {
+		perror("Unable to kill child process");
+		exit(1);
+	    }
+	    result = waitpid(child, &status, 0);
+	    if (result != child) {
+		fprintf(stderr, "waitpid didn't match child: %u != %u\n",
+			child, result);
+		exit(1);
+	    }
+	    if (WTERMSIG(status) != value) {
+		fprintf(stderr, "child terminated with odd signal (%d != %d)\n"
+			, value, WTERMSIG(status));
 		exit(1);
 	    }
 	} else if (!memcmp("--uid=", argv[i], 6)) {
@@ -273,22 +360,27 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	    }
 	    printf("uid=%u\n", getuid());
-	} else if (!strcmp("--", argv[i])) {
-	    argv[i] = strdup("/bin/bash");
+	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
+	    argv[i] = strdup(argv[i][0] == '-' ? "/bin/bash" : argv[0]);
 	    argv[argc] = NULL;
-	    execve("/bin/bash", argv+i, envp);
+	    execve(argv[i], argv+i, envp);
 	    fprintf(stderr, "execve /bin/bash failed!\n");
 	    exit(1);
 	} else {
+	usage:
 	    printf("usage: %s [args ...]\n"
 		   "  --help         this message\n"
 		   "  --print        display capability relevant state\n"
 		   "  --drop=xxx     remove xxx,.. capabilities from bset\n"
+		   "  --caps=xxx     set caps as per cap_from_text()\n"
 		   "  --inh=xxx      set xxx,.. inheritiable set\n"
 		   "  --secbits=<n>  write a new value for securebits\n"
 		   "  --keep=<n>     set keep-capabability bit to <n>\n"
 		   "  --uid=<n>      set uid to <n> (hint: id <username>)\n"
 		   "  --chroot=path  chroot(2) to this path to invoke bash\n"
+		   "  --killit=<n>   send signal(n) to child\n"
+		   "  --forkfor=<n>  fork and make child sleep for <n> sec\n"
+		   "  ==             re-exec(capsh) with args as for --\n"
 		   "  --             remaing arguments are for /bin/bash\n"
 		   "                 (without -- [%s] will simply exit(0))\n",
 		   argv[0], argv[0]);
