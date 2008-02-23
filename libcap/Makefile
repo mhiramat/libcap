@@ -51,7 +51,7 @@ $(MINLIBNAME): $(OBJS)
 %.o: %.c $(INCLS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-cap_text.o: cap_text.c $(USE_GPERF_OUTPUT)
+cap_text.o: cap_text.c $(USE_GPERF_OUTPUT) $(INCLS)
 	$(CC) $(CFLAGS) $(INCLUDE_GPERF_OUTPUT) -c $< -o $@
 
 install: all
