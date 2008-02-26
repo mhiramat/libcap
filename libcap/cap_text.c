@@ -6,12 +6,19 @@
  * representations of capability sets.
  */
 
+#define _GNU_SOURCE
+#include <stdio.h>
+
 #define LIBCAP_PLEASE_INCLUDE_ARRAY
 #include "libcap.h"
 
 #include <ctype.h>
-#include <stdio.h>
 #include <limits.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#define SYS_DIR_ROOT_NAMES "/sys/kernel/capability/names"
+#define SYS_DIR_ROOT_CODES "/sys/kernel/capability/codes"
 
 /* Maximum output text length (16 per cap) */
 #define CAP_TEXT_SIZE    (16*__CAP_MAXBITS)
@@ -77,9 +84,9 @@ static int lookupname(char const **strp)
 	*strp = str.constp;
 	return n;
     } else {
-#ifdef GPERF_DOWNCASE
-	const struct __cap_token_s *token_info;
-	int c;
+	int fd;
+	char *tmp;
+	int c, n;
 	unsigned len;
 
 	for (len=0; (c = str.constp[len]); ++len) {
@@ -87,6 +94,10 @@ static int lookupname(char const **strp)
 		break;
 	    }
 	}
+
+#ifdef GPERF_DOWNCASE
+	const struct __cap_token_s *token_info;
+
 	token_info = __cap_lookup_name(str.constp, len);
 	if (token_info != NULL) {
 	    *strp = str.constp + len;
@@ -94,7 +105,7 @@ static int lookupname(char const **strp)
 	}
 #else /* ie., ndef GPERF_DOWNCASE */
 	char const *s;
-	int n;
+
 	for (n = __CAP_BITS; n--; )
 	    if (_cap_names[n] && (s = namcmp(str.constp, _cap_names[n]))) {
 		*strp = s;
@@ -102,6 +113,25 @@ static int lookupname(char const **strp)
 	    }
 #endif /* def GPERF_DOWNCASE */
 
+	asprintf(&tmp, SYS_DIR_ROOT_NAMES "/%s", str.constp);
+	str.constp += len;
+	tmp[sizeof(SYS_DIR_ROOT_NAMES) + len] = '\0';
+
+	fd = open(tmp, O_RDONLY);
+	free(tmp);
+
+	if (fd >= 0) {
+	    char ref[10];
+
+	    len = read(fd, ref, 9);
+	    close(fd);
+	    if (len > 0) {
+		ref[len] = '\0';
+		n = strtoul(ref, NULL, 10);
+		*strp = str.constp;
+		return n;
+	    }
+	}
 	return -1;   	/* No definition available */
     }
 }
@@ -269,10 +299,29 @@ char *cap_to_name(cap_value_t cap)
 #if UINT_MAX != 4294967295U
 # error Recompile with correctly sized numeric array
 #endif
-	char numeric[11];
+	char *tmp, *result;
+	int fd, len;
 
-	sprintf(numeric, "%u", cap);
-	return _libcap_strdup(numeric);
+	asprintf(&tmp, SYS_DIR_ROOT_CODES "/%u", cap);
+	fd = open(tmp, O_RDONLY);
+
+	if (fd >= 0) {
+	    len = read(fd, tmp, sizeof(SYS_DIR_ROOT_CODES));
+	    close(fd);
+	    if (len > 0) {
+		tmp[len-1] = '\0';
+	    } else {
+		goto default_to_numeric;
+	    }
+	} else {
+	default_to_numeric:
+	    sprintf(tmp, "%u", cap);
+	}
+
+	result = _libcap_strdup(tmp);
+	free(tmp);
+
+	return result;
     } else {
 	return _libcap_strdup(_cap_names[cap]);
     }
@@ -339,14 +388,17 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 	    *p++ = ' ';
 	    for (n = 0; n < __CAP_MAXBITS; n++)
 		if (getstateflags(caps, n) == t) {
-		    if (n < __CAP_BITS)
-			p += sprintf(p, "%s,", _cap_names[n]);
-		    else
-			p += sprintf(p, "%u,", n);
-		    if (p - buf > CAP_TEXT_SIZE) {
+		    char *this_cap_name;
+
+		    this_cap_name = cap_to_name(n);
+		    if ((strlen(this_cap_name) + (p - buf))
+			> CAP_TEXT_SIZE) {
+			cap_free(this_cap_name);
 			errno = ERANGE;
 			return NULL;
 		    }
+		    p += sprintf(p, "%s,", this_cap_name);
+		    cap_free(this_cap_name);
 		}
 	    p--;
 	    n = t & ~m;

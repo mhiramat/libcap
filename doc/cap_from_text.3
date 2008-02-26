@@ -24,9 +24,10 @@ functions in working storage. The textual representation is a structured,
 human-readable, string suitable for display.
 .PP
 .B cap_from_text
-allocates and initializes a capability state in working storage. It then
-sets the contents of this newly-created capability state to the state
-represented by human-readable, null terminated character string pointed to by
+allocates and initializes a capability state in working storage. It
+then sets the contents of this newly-created capability state to the
+state represented by a human-readable, nul terminated, character
+string pointed to by
 .IR buf_p .
 It returns a pointer to the newly created capability state.  The
 caller should free any releasable memory, when the capability state in working
@@ -52,7 +53,7 @@ the string.  If the pointer
 is not
 .BR NULL ,
 the function shall also return the full length of the string (not including
-the null terminator) in the location pointed to by
+the nul terminator) in the location pointed to by
 .IR len_p .
 The capability state in working storage, identified by
 .IR cap_p ,
@@ -60,9 +61,7 @@ is completely represented in the character string.  The caller should
 free any releasable memory, when the capability state in working
 storage is no longer required, by calling
 .B cap_free
-with
-.B cap_p
-as an argument.
+with the returned string pointer as an argument.
 .PP
 .B cap_from_name
 converts a text representation of a capability, such as "cap_chown",
