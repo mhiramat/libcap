@@ -332,14 +332,7 @@ typedef struct kernel_cap_struct {
 
 #define CAP_MAC_ADMIN        33
 
-/* Allow acting on resources in another namespace.  In
-   particular:
-      1. when combined with CAP_KILL, kill users in another
-         user namespace
- */
-#define CAP_NS_OVERRIDE      34
-
-#define CAP_LAST_CAP         CAP_NS_OVERRIDE
+#define CAP_LAST_CAP         CAP_MAC_ADMIN
 
 #define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
 
