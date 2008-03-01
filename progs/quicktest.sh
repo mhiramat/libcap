@@ -42,6 +42,31 @@ pass_capsh () {
 
 pass_capsh --print
 pass_capsh --keep=0 --keep=1 --keep=0 --keep=1 --print
+
+# Explore keep_caps support
+
+rm -f tcapsh
+cp capsh tcapsh
+chown root.root tcapsh
+chmod u+s tcapsh
+ls -l tcapsh
+
+# leverage keep caps maintain capabilities accross a change of uid
+# from setuid root to capable luser (as per wireshark/dumpcap 0.99.7)
+pass_capsh --uid=500 -- -c "./tcapsh --keep=1 --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 --caps=\"cap_net_raw,cap_net_admin=pie\" --print"
+
+# This fails, on 2.6.24, but shouldn't
+pass_capsh --uid=500 -- -c "./tcapsh --keep=1 --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 --forkfor=10 --caps= --print --killit=9 --print"
+
+rm -f tcapsh
+
+# only continue with these if --secbits is supported
+./capsh --secbits=0x2f > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "unable to test securebits manipulation - assume not supported (PASS)"
+    exit 0
+fi
+
 pass_capsh --secbits=42 --print
 fail_capsh --secbits=32 --keep=1 --keep=0 --print
 pass_capsh --secbits=10 --keep=0 --keep=1 --print
@@ -69,20 +94,3 @@ pass_capsh --secbits=47 --inh=cap_net_raw --drop=cap_net_raw \
     --uid=500 --print -- -c "./ping -c1 localhost"
 
 rm -f ./ping
-
-# Explore keep_caps support
-
-rm -f tcapsh
-cp capsh tcapsh
-chown root.root tcapsh
-chmod u+s tcapsh
-ls -l tcapsh
-
-# leverage keep caps maintain capabilities accross a change of uid
-# from setuid root to capable luser (as per wireshark/dumpcap 0.99.7)
-pass_capsh --uid=500 -- -c "./tcapsh --keep=1 --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 --caps=\"cap_net_raw,cap_net_admin=pie\" --print"
-
-# This fails, on 2.6.24, but shouldn't
-# pass_capsh --uid=500 -- -c "./tcapsh --keep=1 --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 --forkfor=10 --caps= --print --killit=9 --print"
-
-rm -f tcapsh
