@@ -22,4 +22,4 @@ install: all
 
 clean:
 	$(LOCALCLEAN)
-	rm -f *.o $(PROGS)
+	rm -f *.o $(PROGS) tcapsh ping
