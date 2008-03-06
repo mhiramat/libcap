@@ -79,6 +79,7 @@ rm -f tcapsh
 ./capsh --secbits=0x2f > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "unable to test securebits manipulation - assume not supported (PASS)"
+    rm -f ./ping
     exit 0
 fi
 
