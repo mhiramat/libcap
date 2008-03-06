@@ -34,18 +34,18 @@
 
 #define raise_cap_mask(flat, c)  (flat)[CAP_TO_INDEX(c)] |= CAP_TO_MASK(c)
 
-static void setbits(cap_t a, const __u32 *b, cap_flag_t set)
+static void setbits(cap_t a, const __u32 *b, cap_flag_t set, unsigned blks)
 {
     int n;
-    for (n = __CAP_BLKS; n--; ) {
+    for (n = blks; n--; ) {
 	a->u[n].flat[set] |= b[n];
     }
 }
 
-static void clrbits(cap_t a, const __u32 *b, cap_flag_t set)
+static void clrbits(cap_t a, const __u32 *b, cap_flag_t set, unsigned blks)
 {
     int n;
-    for (n = __CAP_BLKS; n--; )
+    for (n = blks; n--; )
 	a->u[n].flat[set] &= ~b[n];
 }
 
@@ -60,11 +60,11 @@ static char const *namcmp(char const *str, char const *nam)
     return str;
 }
 
-static void forceall(__u32 *flat, __u32 value)
+static void forceall(__u32 *flat, __u32 value, unsigned blks)
 {
     unsigned n;
 
-    for (n = __CAP_BLKS; n--; flat[n] = value);
+    for (n = blks; n--; flat[n] = value);
 
     return;
 }
@@ -140,6 +140,7 @@ cap_t cap_from_text(const char *str)
 {
     cap_t res;
     int n;
+    unsigned cap_blks;
 
     if (str == NULL) {
 	_cap_debug("bad argument");
@@ -150,6 +151,18 @@ cap_t cap_from_text(const char *str)
     if (!(res = cap_init()))
 	return NULL;
 
+    switch (res->head.version) {
+    case _LINUX_CAPABILITY_VERSION_1:
+	cap_blks = _LINUX_CAPABILITY_U32S_1;
+	break;
+    case _LINUX_CAPABILITY_VERSION_2:
+	cap_blks = _LINUX_CAPABILITY_U32S_2;
+	break;
+    default:
+	errno = EINVAL;
+	return NULL;
+    }
+    
     _cap_debug("%s", str);
 
     for (;;) {
@@ -157,7 +170,7 @@ cap_t cap_from_text(const char *str)
 	char op;
 	int flags = 0, listed=0;
 
-	forceall(list, 0);
+	forceall(list, 0, __CAP_BLKS);
 
 	/* skip leading spaces */
 	while (isspace((unsigned char)*str))
@@ -175,7 +188,7 @@ cap_t cap_from_text(const char *str)
 	    for (;;) {
 		if (namcmp(str, "all")) {
 		    str += 3;
-		    forceall(list, ~0);
+		    forceall(list, ~0, cap_blks);
 		} else {
 		    n = lookupname(&str);
 		    if (n == -1)
@@ -191,7 +204,7 @@ cap_t cap_from_text(const char *str)
 	} else if (*str == '+' || *str == '-') {
 	    goto bad;                    /* require a list of capabilities */
 	} else {
-	    forceall(list, ~0);
+	    forceall(list, ~0, cap_blks);
 	}
 
 	/* identify first operation on list of capabilities */
@@ -230,28 +243,28 @@ cap_t cap_from_text(const char *str)
 	    case '=':
 	    case 'P':                                              /* =+ */
 	    case 'M':                                              /* =- */
-		clrbits(res, list, CAP_EFFECTIVE);
-		clrbits(res, list, CAP_PERMITTED);
-		clrbits(res, list, CAP_INHERITABLE);
+		clrbits(res, list, CAP_EFFECTIVE, cap_blks);
+		clrbits(res, list, CAP_PERMITTED, cap_blks);
+		clrbits(res, list, CAP_INHERITABLE, cap_blks);
 		if (op == 'M')
 		    goto minus;
 		/* fall through */
 	    case '+':
 		if (flags & LIBCAP_EFF)
-		    setbits(res, list, CAP_EFFECTIVE);
+		    setbits(res, list, CAP_EFFECTIVE, cap_blks);
 		if (flags & LIBCAP_PER)
-		    setbits(res, list, CAP_PERMITTED);
+		    setbits(res, list, CAP_PERMITTED, cap_blks);
 		if (flags & LIBCAP_INH)
-		    setbits(res, list, CAP_INHERITABLE);
+		    setbits(res, list, CAP_INHERITABLE, cap_blks);
 		break;
 	    case '-':
 	    minus:
 		if (flags & LIBCAP_EFF)
-		    clrbits(res, list, CAP_EFFECTIVE);
+		    clrbits(res, list, CAP_EFFECTIVE, cap_blks);
 		if (flags & LIBCAP_PER)
-		    clrbits(res, list, CAP_PERMITTED);
+		    clrbits(res, list, CAP_PERMITTED, cap_blks);
 		if (flags & LIBCAP_INH)
-		    clrbits(res, list, CAP_INHERITABLE);
+		    clrbits(res, list, CAP_INHERITABLE, cap_blks);
 		break;
 	    }
 
@@ -354,11 +367,12 @@ static int getstateflags(cap_t caps, int capno)
 
 char *cap_to_text(cap_t caps, ssize_t *length_p)
 {
-    static char buf[CAP_TEXT_SIZE+CAP_TEXT_BUFFER_ZONE];
+    char buf[CAP_TEXT_SIZE+CAP_TEXT_BUFFER_ZONE];
     char *p;
-    int histo[8] = {0};
+    int histo[8];
     int m, t;
     unsigned n;
+    unsigned cap_maxbits, cap_blks;
 
     /* Check arguments */
     if (!good_cap_t(caps)) {
@@ -366,11 +380,27 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 	return NULL;
     }
 
+    switch (caps->head.version) {
+    case _LINUX_CAPABILITY_VERSION_1:
+	cap_blks = _LINUX_CAPABILITY_U32S_1;
+	break;
+    case _LINUX_CAPABILITY_VERSION_2:
+	cap_blks = _LINUX_CAPABILITY_U32S_2;
+	break;
+    default:
+	errno = EINVAL;
+	return NULL;
+    }
+
+    cap_maxbits = 32 * cap_blks;
+
     _cap_debugcap("e = ", *caps, CAP_EFFECTIVE);
     _cap_debugcap("i = ", *caps, CAP_INHERITABLE);
     _cap_debugcap("p = ", *caps, CAP_PERMITTED);
 
-    for (n = __CAP_MAXBITS; n--; )
+    memset(histo, 0, sizeof(histo));
+
+    for (n = cap_maxbits; n--; )
 	histo[getstateflags(caps, n)]++;
 
     for (m=t=7; t--; )
@@ -386,13 +416,12 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
     for (t = 8; t--; )
 	if (t != m && histo[t]) {
 	    *p++ = ' ';
-	    for (n = 0; n < __CAP_MAXBITS; n++)
+	    for (n = 0; n < cap_maxbits; n++)
 		if (getstateflags(caps, n) == t) {
 		    char *this_cap_name;
 
 		    this_cap_name = cap_to_name(n);
-		    if ((strlen(this_cap_name) + (p - buf))
-			> CAP_TEXT_SIZE) {
+		    if ((strlen(this_cap_name) + (p - buf)) > CAP_TEXT_SIZE) {
 			cap_free(this_cap_name);
 			errno = ERANGE;
 			return NULL;
