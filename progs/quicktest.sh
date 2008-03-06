@@ -41,9 +41,24 @@ pass_capsh () {
 }
 
 pass_capsh --print
-pass_capsh --keep=0 --keep=1 --keep=0 --keep=1 --print
+
+# Make a local non-setuid-0 version of ping
+cp /bin/ping . && chmod -s ./ping
+
+# Give it the forced capability it needs
+./setcap all=ep ./ping
+if [ $? -ne 0 ]; then
+    echo "Failed to set all capabilities on file"
+    exit 1
+fi
+./setcap cap_net_raw=ep ./ping
+if [ $? -ne 0 ]; then
+    echo "Failed to set single capability on ping file"
+    exit 1
+fi
 
 # Explore keep_caps support
+pass_capsh --keep=0 --keep=1 --keep=0 --keep=1 --print
 
 rm -f tcapsh
 cp capsh tcapsh
@@ -74,12 +89,6 @@ fail_capsh --secbits=47 -- -c "ping -c1 localhost"
 
 # Suppress uid=0 privilege
 fail_capsh --secbits=47 --print -- -c "/bin/ping -c1 localhost"
-
-# Make a local non-setuid-0 version of ping
-cp /bin/ping . && chmod -s ./ping
-
-# Give it the forced capability it needs
-./setcap cap_net_raw=ep ./ping
 
 # suppress uid=0 privilege and test this ping
 pass_capsh --secbits=0x2f --print -- -c "./ping -c1 localhost"
