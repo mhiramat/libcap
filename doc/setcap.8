@@ -5,7 +5,7 @@
 .SH NAME
 setcap \- set file capabilities
 .SH SYNOPSIS
-\fBsetcap\fP \fIcapabilities filename\fP [ ... \fIcapabilitiesN\fP \fIfileN\fP ]
+\fBsetcap\fP (\fIcapabilities|-|-r) filename\fP [ ... \fIcapabilitiesN\fP \fIfileN\fP ]
 .SH DESCRIPTION
 .B setcap
 sets the capabilities of each specified
@@ -21,6 +21,8 @@ The special filename, '\-',
 can be used to indicate that capabilities are read from the standard
 input. In such cases, the capability set is terminated with a blank
 line.
+.PP
+The option, '-r', can be used to remove a capability set from a file.
 .SH "SEE ALSO"
 .IR cap_from_text (3),
 .IR cap_set_file (3),
