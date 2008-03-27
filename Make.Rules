@@ -11,7 +11,7 @@ FAKEROOT=$(DESTDIR)
 # header files in /usr/include/ and documentation in /usr/man/man?/.
 
 ifndef lib
-lib=lib
+lib=$(shell ldd /usr/bin/ld|fgrep libc.|cut -d/ -f2)
 endif
 
 ifdef prefix
