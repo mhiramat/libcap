@@ -85,6 +85,7 @@ extern int     cap_get_flag(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *);
 extern int     cap_set_flag(cap_t, cap_flag_t, int, const cap_value_t *,
 			    cap_flag_value_t);
 extern int     cap_clear(cap_t);
+extern int     cap_clear_flag(cap_t, cap_flag_t);
 
 /* libcap/cap_file.c */
 extern cap_t   cap_get_fd(int);

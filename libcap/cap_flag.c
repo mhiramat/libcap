@@ -93,3 +93,32 @@ int cap_clear(cap_t cap_d)
     }
 }
 
+/*
+ *  Reset the all of the capability bits for one of the flag sets
+ */
+
+int cap_clear_flag(cap_t cap_d, cap_flag_t flag)
+{
+    switch (flag) {
+    case CAP_EFFECTIVE:
+    case CAP_PERMITTED:
+    case CAP_INHERITABLE:
+	if (good_cap_t(cap_d)) {
+	    unsigned i;
+
+	    for (i=0; i<_LINUX_CAPABILITY_U32S; i++) {
+		cap_d->u[i].flat[flag] = 0;
+	    }
+	    return 0;
+	}
+	/*
+	 * fall through
+	 */
+
+    default:
+	_cap_debug("invalid pointer");
+	errno = EINVAL;
+	return -1;
+    }
+}
+

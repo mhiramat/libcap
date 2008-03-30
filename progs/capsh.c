@@ -101,6 +101,10 @@ int main(int argc, char *argv[], char *envp[])
 		perror("Capabilities not available");
 		exit(1);
 	    }
+	    if (cap_clear_flag(all, CAP_INHERITABLE) != 0) {
+		perror("libcap:cap_clear_flag() internal error");
+		exit(1);
+	    }
 
 	    raised_for_setpcap = cap_dup(all);
 	    if ((raised_for_setpcap != NULL)
@@ -121,7 +125,7 @@ int main(int argc, char *argv[], char *envp[])
 		perror("Out of memory for inh set");
 		exit(1);
 	    }
-	    sprintf(ptr, "%s all-i %s+i", text, argv[i]+6);
+	    sprintf(ptr, "%s %s+i", text, argv[i]+6);
 
 	    all = cap_from_text(ptr);
 	    if (all == NULL) {
