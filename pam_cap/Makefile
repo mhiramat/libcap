@@ -6,12 +6,9 @@ include ../Make.Rules
 all: pam_cap.so
 	$(MAKE) testcompile
 
-install:
-	@echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-	@echo "X                                                X"
-	@echo "X Need to figure out where to install pam_cap.so X"
-	@echo "X                                                X"
-	@echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+install: all
+	mkdir -p -m 0755 $(LIBDIR)/security
+	install -m 0755 pam_cap.so $(LIBDIR)/security
 
 pam_cap.so: pam_cap.o
 	$(LD) -o pam_cap.so $< $(LIBS)
