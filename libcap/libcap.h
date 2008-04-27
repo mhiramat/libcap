@@ -166,7 +166,7 @@ extern int capsetp(pid_t pid, cap_t cap_d);
 #define PR_SET_KEEPCAPS    8
 #define PR_CAPBSET_READ   23
 #define PR_CAPBSET_DROP   24
-#define PR_GET_SECUREBITS 25
-#define PR_SET_SECUREBITS 26
+#define PR_GET_SECUREBITS 27
+#define PR_SET_SECUREBITS 28
 
 #endif /* LIBCAP_H */
