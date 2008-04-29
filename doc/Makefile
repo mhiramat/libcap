@@ -5,7 +5,6 @@
 topdir=$(shell pwd)/..
 include $(topdir)/Make.Rules
 
-MAN2S = capget.2 capset.2
 MAN3S = cap_init.3 cap_free.3 cap_dup.3 \
 	cap_clear.3 cap_clear_flag.3 cap_get_flag.3 cap_set_flag.3 \
 	cap_get_proc.3 cap_set_proc.3 \
@@ -15,14 +14,13 @@ MAN3S = cap_init.3 cap_free.3 cap_dup.3 \
 	capsetp.3 capgetp.3
 MAN8S = getcap.8 setcap.8
 
-MANS = $(MAN2S) $(MAN3S) $(MAN8S)
+MANS = $(MAN3S) $(MAN8S)
 
 all: $(MANS)
 
 install:
-	mkdir -p -m 755 $(MANDIR)/man2 $(MANDIR)/man3 $(MANDIR)/man8
+	mkdir -p -m 755 $(MANDIR)/man3 $(MANDIR)/man8
 	for man in \
-		$(MANDIR)/man2 $(MAN2S) \
 		$(MANDIR)/man3 $(MAN3S) \
 		$(MANDIR)/man8 $(MAN8S) \
 		; \
