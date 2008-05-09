@@ -22,7 +22,7 @@ in such a way that all capability flags are cleared.
 .BR cap_clear_flag ()
 resets, to
 .BR CAP_CLEAR ,
-all of the capabilities of the specific capability flag,
+all of the capabilities of the specified capability flag,
 .IR flag .
 .PP
 .BR cap_get_flag ()
@@ -81,9 +81,9 @@ is set to
 .BR EINVAL ,
 indicating that one of the arguments is invalid.
 .SH "CONFORMING TO"
-These functions are as per the defunct POSIX.1e. spec.
+These functions are as per the withdrawn POSIX.1e draft specification.
 .BR cap_clear_flag ()
-is an extension.
+is a Linux extension.
 .SH "SEE ALSO"
 .BR cap_copy_ext (3),
 .BR cap_from_text (3),
