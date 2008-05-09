@@ -22,7 +22,7 @@ persistent representation of a capability state in user-managed space.  The
 internal representation is managed by the capability functions in working
 storage.
 .PP
-.B cap_size
+.BR cap_size ()
 returns the total length (in bytes) that the capability state in working
 storage identified by
 .I cap_p
@@ -30,27 +30,27 @@ would require when converted by
 .BR cap_copy_ext .
 This function is used primarily to determine the amount of buffer space that
 must be provided to the
-.B cap_copy_ext
+.BR cap_copy_ext ()
 function in order to hold the capability data record created from
 .IR cap_p .
 .PP
-.B cap_copy_ext
+.BR cap_copy_ext ()
 copies a capability state in working storage, identified by
 .IR cap_p ,
 from system managed space to user-managed space (pointed to by
 .IR ext_p )
 and returns the length of the resulting data record.  The size parameter
 represents the maximum size, in bytes, of the resulting data record.  The
-.B cap_copy_ext
+.BR cap_copy_ext ()
 function will do any conversions necessary to convert the capability state
 from the undefined internal format to an exportable, contiguous, persistent
 data record.  It is the responsibility of the user to allocate a buffer large
 enough to hold the copied data.  The buffer length required to hold the copied
 data may be obtained by a call to the
-.B cap_size
+.BR cap_size ()
 function.
 .PP
-.B cap_copy_int
+.BR cap_copy_int ()
 copies a capability state from a capability data record in user-managed
 space to a new capability state in working storage, allocating any
 memory necessary, and returning a pointer to the newly created capability
@@ -63,30 +63,30 @@ copied into internal format, the object can be manipulated by the capability
 state manipulation functions.  Note that the record pointed to by
 .I ext_p
 must have been obtained from a previous, successful call to
-.B cap_copy_ext
+.BR cap_copy_ext ()
 for this function to work successfully.  The caller should free any
 releasable memory, when the capability state in working storage is no
 longer required, by calling
-.B cap_free
+.BR cap_free ()
 with the
 .I cap_t
 as an argument.
 .SH "RETURN VALUE"
-.B cap_size
+.BR cap_size ()
 returns the length required to hold a capability data record on success,
 and -1 on failure.
 .PP
-.B cap_copy_ext
+.BR cap_copy_ext ()
 returns the number of bytes placed in the user managed space pointed to by
 .I ext_p 
 on success, and -1 on failure.
 .PP
-.B cap_copy_int
+.BR cap_copy_int ()
 returns a pointer to the newly created capability state in working storage
 on success, and NULL on failure.
 .PP
 On failure,
-.BR errno (3)
+.BR errno
 is set to
 .BR EINVAL ,
 .BR ENOMEM ,
@@ -95,8 +95,8 @@ or
 .SH "CONFORMING TO"
 These functions are specified by POSIX.1e.
 .SH "SEE ALSO"
-.IR cap_clear (3),
-.IR cap_from_text (3),
-.IR cap_get_file (3),
-.IR cap_get_proc (3),
-.IR cap_init (3)
+.BR cap_clear (3),
+.BR cap_from_text (3),
+.BR cap_get_file (3),
+.BR cap_get_proc (3),
+.BR cap_init (3)

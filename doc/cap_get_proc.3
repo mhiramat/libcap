@@ -27,18 +27,18 @@ arbitrary processes
 .br
 .B cc ... -lcap
 .SH DESCRIPTION
-.B cap_get_proc
+.BR cap_get_proc ()
 allocates a capability state in working storage, sets its state to
 that of the calling process, and returns a pointer to this newly
 created capability state.  The caller should free any releasable
 memory, when the capability state in working storage is no longer
 required, by calling
-.B cap_free
+.BR cap_free ()
 with the
 .I cap_t
 as an argument.
 .PP
-.B cap_set_proc
+.BR cap_set_proc ()
 sets the values for all capability flags for all capabilities with the
 capability state identified by
 .IR cap_p .
@@ -51,7 +51,7 @@ is set for any capability not currently permitted for the calling process,
 the function will fail, and the capability state of the process will remain
 unchanged.
 .PP
-.B capgetp
+.BR capgetp ()
 fills an existing
 .BR cap_d ,
 see 
@@ -62,7 +62,7 @@ This information can also be obtained from the
 .B /proc/<pid>/status
 file.
 .PP
-.B capsetp
+.BR capsetp ()
 attempts to set the capabilities of some other process(es),
 .IR pid . 
 If
@@ -81,28 +81,31 @@ target process(es) are those contained in
 .IR cap_d .
 
 .SH "RETURN VALUE"
-.B cap_get_proc
+.BR cap_get_proc ()
 returns a non-NULL value on success, and NULL on failure.
 .PP
-.BR cap_set_proc ", " capgetp " and " capsetp
+.BR cap_set_proc (),
+.BR capgetp ()
+and
+.BR capsetp ()
 return zero for success, and \-1 on failure.
 .PP
 On failure,
-.BR errno (3)
+.I errno
 is set to
 .BR EINVAL ,
 .BR EPERM,
 or
 .BR ENOMEM .
 .SH "CONFORMING TO"
-.B cap_set_proc
+.BR cap_set_proc ()
 and
-.B cap_get_proc
+.BR cap_get_proc ()
 are functions specified in the draft for POSIX.1e.
 
 .SH "NOTES"
 The function
-.B capsetp
+.BR capsetp ()
 should be used with care.  It exists, primarily, to overcome a lack of
 support for capabilities in any of the filesystems supported by Linux.
 The semantics of this function may change as it is better understood.
@@ -115,8 +118,8 @@ kflushd and kswapd). You will need to recompile the kernel to modify
 this default.
 
 .SH "SEE ALSO"
-.IR cap_clear (3),
-.IR cap_copy_ext (3),
-.IR cap_from_text (3),
-.IR cap_get_file (3),
-.IR cap_init (3)
+.BR cap_clear (3),
+.BR cap_copy_ext (3),
+.BR cap_from_text (3),
+.BR cap_get_file (3),
+.BR cap_init (3)
