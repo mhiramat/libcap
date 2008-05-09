@@ -3,25 +3,16 @@
 .\"
 .TH CAP_GET_PROC 3 "26th May 1997" "" "Linux Programmer's Manual"
 .SH NAME
-cap_get_proc, cap_set_proc \- POSIX capability manipulation on
+cap_get_proc, cap_set_proc, capgetp \- capability manipulation on
 processes
-.sp
-capgetp, capsetp \- Linux specific capability manipulation on
-arbitrary processes
 .SH SYNOPSIS
 .B #include <sys/capability.h>
 .sp
 .B cap_t cap_get_proc(void);
-.br
+.sp
 .BI "int cap_set_proc(cap_t " cap_p );
 .sp
-.B #undef _POSIX_SOURCE
-.br
-.B #include <sys/capability.h>
-.sp
 .BI "cap_t capgetp(pid_t " pid ", cap_t " cap_d );
-.br
-.BI "cap_t capsetp(pid_t " pid ", cap_t " cap_d );
 .sp
 Link with \fI-lcap\fP.
 .SH DESCRIPTION
@@ -59,25 +50,6 @@ with the process capabilities of the process indicated by
 This information can also be obtained from the
 .B /proc/<pid>/status
 file.
-.PP
-.BR capsetp ()
-attempts to set the capabilities of some other process(es),
-.IR pid . 
-If
-.I pid
-is positive it refers to a specific process;  if it is zero, it refers
-to the current process; -1 refers to all processes other than the
-current process and process '1' (typically 
-.BR init (8));
-other negative values refer to the
-.I -pid
-process-group.  In order to use this function, the current process
-must have
-.B CAP_SETPCAP
-raised in its Effective capability set.  The capabilities set in the
-target process(es) are those contained in
-.IR cap_d .
-
 .SH "RETURN VALUE"
 .BR cap_get_proc ()
 returns a non-NULL value on success, and NULL on failure.
@@ -101,12 +73,37 @@ and
 .BR cap_get_proc ()
 are functions specified in the withdrawn POSIX.1e draft specification.
 .SH "NOTES"
-The function
+The library also supports the depreciated function:
+.PP
+.BI "cap_t capsetp(pid_t " pid ", cap_t " cap_d );
+.PP
 .BR capsetp ()
-should be used with care.  It exists, primarily, to overcome a lack of
-support for capabilities in any of the filesystems supported by Linux.
-The semantics of this function may change as it is better understood.
-Please note, by default, the only processes that have
+attempts to set the capabilities of some other process(es),
+.IR pid . 
+If
+.I pid
+is positive it refers to a specific process;  if it is zero, it refers
+to the current process; -1 refers to all processes other than the
+current process and process '1' (typically 
+.BR init (8));
+other negative values refer to the
+.I -pid
+process-group.  In order to use this function, the kernel must support
+it and the current process must have
+.B CAP_SETPCAP
+raised in its Effective capability set. The capabilities set in the
+target process(es) are those contained in
+.IR cap_d .
+Kernels that support filesystem capabilities redefine the semantics of
+.B CAP_SETPCAP
+and on such systems this function will always fail for any target not
+equal to the current process.
+
+Where supported by the kernel, the function
+.BR capsetp ()
+should be used with care.  It existed, primarily, to overcome an early
+lack of support for capabilities in the filesystems supported by
+Linux.  Please note, by default, the only processes that have
 .B CAP_SETPCAP
 available to them are processes started as a kernel-thread.
 (Typically this includes
