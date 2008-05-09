@@ -22,10 +22,8 @@ arbitrary processes
 .BI "cap_t capgetp(pid_t " pid ", cap_t " cap_d );
 .br
 .BI "cap_t capsetp(pid_t " pid ", cap_t " cap_d );
-
-.SH USAGE
-.br
-.B cc ... -lcap
+.sp
+Link with \fI-lcap\fP.
 .SH DESCRIPTION
 .BR cap_get_proc ()
 allocates a capability state in working storage, sets its state to

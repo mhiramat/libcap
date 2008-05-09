@@ -14,9 +14,8 @@ cap_from_text, cap_to_text, cap_to_name, cap_from_name \- capability state textu
 .BI "int cap_from_text(const char *" name ", cap_value_t *" cap_p );
 .sp
 .BI "char *cap_to_text(cap_value_t " cap );
-.SH USAGE
-.br
-.B cc ... -lcap
+.sp
+Link with \fI-lcap\fP.
 .SH DESCRIPTION
 These functions translate a capability state from an internal representation
 into a textual one.  The internal representation is managed by the capability
