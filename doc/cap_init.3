@@ -23,17 +23,17 @@ manipulated only within this working storage area.  Once editing of
 the capability state is complete, the updated capability state is used
 to replace the capability state associated with the file or process.
 .PP
-.B cap_init
+.BR cap_init ()
 creates a capability state in working storage and return a pointer to
 the capability state.  The initial value of all flags are cleared.  The
 caller should free any releasable memory, when the capability state in
 working storage is no longer required, by calling
-.B cap_free
+.BR cap_free ()
 with the 
 .I cap_t
 as an argument.
 .PP
-.B cap_free
+.BR cap_free ()
 liberates any releasable memory that has been allocated to the
 capability state identified by
 .IR obj_d .

@@ -3,7 +3,8 @@
 .\"
 .TH CAP_FROM_TEXT 3 "21th Jan 2008" "" "Linux Programmer's Manual"
 .SH NAME
-cap_from_text, cap_to_text, cap_to_name, cap_from_name \- capability state textual representation translation
+cap_from_text, cap_to_text, cap_to_name, cap_from_name \- capability
+state textual representation translation
 .SH SYNOPSIS
 .B #include <sys/capability.h>
 .sp
@@ -18,7 +19,8 @@ cap_from_text, cap_to_text, cap_to_name, cap_from_name \- capability state textu
 Link with \fI-lcap\fP.
 .SH DESCRIPTION
 These functions translate a capability state from an internal representation
-into a textual one.  The internal representation is managed by the capability
+into a textual one.
+The internal representation is managed by the capability
 functions in working storage. The textual representation is a structured,
 human-readable, string suitable for display.
 .PP
@@ -29,7 +31,8 @@ state represented by a human-readable, nul terminated, character
 string pointed to by
 .IR buf_p .
 It returns a pointer to the newly created capability state.  The
-caller should free any releasable memory, when the capability state in working
+caller should free any releasable memory,
+when the capability state in working
 storage is no longer required, by calling
 .BR cap_free ()
 with
@@ -49,8 +52,7 @@ into a null terminated human-readable string.  This function allocates
 any memory necessary to contain the string, and returns a pointer to
 the string.  If the pointer
 .I len_p
-is not
-.BR NULL ,
+is not NULL,
 the function shall also return the full length of the string (not including
 the nul terminator) in the location pointed to by
 .IR len_p .
@@ -70,8 +72,7 @@ Writing the decoded value into
 .IR *cap_p .
 If
 .I cap_p
-is
-.B NULL
+is NULL
 no result is written, but the return code of the function indicates
 whether or not the specified capability can be represented by the
 library.

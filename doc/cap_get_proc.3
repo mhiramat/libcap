@@ -42,13 +42,13 @@ unchanged.
 .PP
 .BR capgetp ()
 fills an existing
-.BR cap_d ,
+.IR cap_d ,
 see 
 .BR cap_init (3),
 with the process capabilities of the process indicated by
 .IR pid .
 This information can also be obtained from the
-.B /proc/<pid>/status
+.I /proc/<pid>/status
 file.
 .SH "RETURN VALUE"
 .BR cap_get_proc ()
@@ -88,7 +88,7 @@ current process and process '1' (typically
 .BR init (8));
 other negative values refer to the
 .I -pid
-process-group.  In order to use this function, the kernel must support
+process group.  In order to use this function, the kernel must support
 it and the current process must have
 .B CAP_SETPCAP
 raised in its Effective capability set. The capabilities set in the
