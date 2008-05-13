@@ -1,8 +1,7 @@
 .\"
-.\" $Id: cap_init.3,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
 .\" written by Andrew Main <zefram@dcs.warwick.ac.uk>
 .\"
-.TH CAP_INIT 3 "26th May 1997" "" "Linux Programmer's Manual"
+.TH CAP_INIT 3 "2008-05-11" "" "Linux Programmer's Manual"
 .SH NAME
 cap_init, cap_free, cap_dup \- capability data object storage management
 .SH SYNOPSIS
@@ -24,7 +23,7 @@ the capability state is complete, the updated capability state is used
 to replace the capability state associated with the file or process.
 .PP
 .BR cap_init ()
-creates a capability state in working storage and return a pointer to
+creates a capability state in working storage and returns a pointer to
 the capability state.  The initial value of all flags are cleared.  The
 caller should free any releasable memory, when the capability state in
 working storage is no longer required, by calling
@@ -54,6 +53,12 @@ source object
 allocating any memory necessary, and returning a
 pointer to the newly created capability state.  Once duplicated, no
 operation on either capability state affects the other in any way.
+When the duplicated capability state in working storage is no longer required,
+the caller should free any releasable memory by calling
+.BR cap_free ()
+with the 
+.I cap_t
+as an argument.
 .SH "RETURN VALUE"
 .BR cap_init ()
 and
@@ -66,7 +71,7 @@ returns zero on success, and \-1 on failure.
 On failure,
 .I errno
 is set to
-.BR EINVAL ,
+.BR EINVAL
 or
 .BR ENOMEM .
 .SH "CONFORMING TO"
