@@ -27,7 +27,7 @@ human-readable string suitable for display.
 .BR cap_from_text ()
 allocates and initializes a capability state in working storage. It
 then sets the contents of this newly created capability state to the
-state represented by a human-readable, null-terminated character
+state represented by a human-readable, nul-terminated character
 string pointed to by
 .IR buf_p .
 It returns a pointer to the newly created capability state.
@@ -48,7 +48,7 @@ is both set and cleared within a single clause.
 .BR cap_to_text ()
 converts the capability state in working storage identified by
 .I cap_p
-into a null-terminated human-readable string.  This function allocates
+into a nul-terminated human-readable string.  This function allocates
 any memory necessary to contain the string, and returns a pointer to
 the string.  If the pointer
 .I len_p
@@ -58,17 +58,17 @@ the nul terminator) in the location pointed to by
 .IR len_p .
 The capability state in working storage, identified by
 .IR cap_p ,
-is completely represented in the character string.  The caller should
-free any releasable memory, when the capability state in working
-storage is no longer required, by calling
+is completely represented in the character string.
+When the capability state in working storage is no longer required,
+the caller should free any releasable memory by calling
 .BR cap_free ()
 with the returned string pointer as an argument.
 .PP
 .BR cap_from_name ()
 converts a text representation of a capability, such as "cap_chown",
 to its numerical representation
-.RB ( CAP_CHOWN=0 ).
-Writing the decoded value into
+.RB ( CAP_CHOWN=0 ),
+writing the decoded value into
 .IR *cap_p .
 If
 .I cap_p
@@ -80,7 +80,8 @@ library.
 .BR cap_to_name ()
 converts a capability index value,
 .IR cap ,
-to a libcap-allocated textual string. This string should be deallocated with
+to a libcap-allocated textual string. This string should be
+deallocated with
 .BR cap_free ().
 .SH "TEXTUAL REPRESENTATION"
 A textual representation of capability sets consists of one or more
