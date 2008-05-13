@@ -1,12 +1,10 @@
 .\"
 .\" written by Andrew Main <zefram@dcs.warwick.ac.uk>
 .\"
-.TH CAP_GET_FILE 3 "17th May 1998" "" "Linux Programmer's Manual"
+.TH CAP_GET_FILE 3 "2008-05-11" "" "Linux Programmer's Manual"
 .SH NAME
 cap_get_file, cap_set_file, cap_get_fd, cap_set_fd \- capability
 manipulation on files
-.sp
-.B "    Note: support for file capabilities is anticipated in Linux 2.6.23+"
 .SH SYNOPSIS
 .B
 .sp
@@ -50,13 +48,13 @@ or the file open on descriptor
 .IR fd ,
 with the capability state identified by
 .IR cap_p .
-The new capability state of the file shall be completely determined by the
+The new capability state of the file is completely determined by the
 contents of
 .IR cap_p .
 A NULL value for
 .IR cap_p
 is used to indicate that capabilities for the file should be deleted.
-For these functions to succeed, the calling process must have the
+For these functions to succeed, the calling process must have the effective
 .B CAP_SETFCAP
 capability enabled and either the effective user ID of the process must match
 the file owner or the calling process must have the effective flag of the
@@ -88,6 +86,32 @@ or
 .BR EROFS .
 .SH "CONFORMING TO"
 These functions are specified by withdrawn POSIX.1e draft specification.
+.SH NOTES
+Support for file capabilities is provided on Linux since version 2.6.24.
+
+On Linux, the file Effective set is a single bit.
+If it is enabled, then all Permitted capabilities are enabled
+in the Effective set of the calling process when the file is executed;
+otherwise, no capabilities are enabled in the process's Effective set
+following an
+.BR execve (2).
+Because the file Effective set is a single bit,
+if any capability is enabled in the Effective set of the
+.I cap_t
+given to
+.BR cap_set_file ()
+or
+.BR cap_set_fd (),
+then all capabilities whose Permitted or Inheritable flag
+is enabled must also have the Effective flag enabled.
+Conversely, if the Effective bit is enabled on a file, then the
+.I cap_t
+returned by
+.BR cap_get_file()
+and
+.BR cap_get_fd()
+will have the Effective flag enabled for each capability that has the
+Permitted or Inheritable flag enabled.
 .SH "SEE ALSO"
 .BR cap_clear (3),
 .BR cap_copy_ext (3),
