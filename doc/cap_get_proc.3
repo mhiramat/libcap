@@ -1,7 +1,7 @@
 .\"
 .\" $Id: cap_get_proc.3,v 1.1.1.1 1999/04/17 22:16:31 morgan Exp $
 .\"
-.TH CAP_GET_PROC 3 "26th May 1997" "" "Linux Programmer's Manual"
+.TH CAP_GET_PROC 3 "2008-05-11" "" "Linux Programmer's Manual"
 .SH NAME
 cap_get_proc, cap_set_proc, capgetp \- capability manipulation on
 processes
@@ -28,7 +28,7 @@ with the
 as an argument.
 .PP
 .BR cap_set_proc ()
-sets the values for all capability flags for all capabilities with the
+sets the values for all capability flags for all capabilities to the
 capability state identified by
 .IR cap_p .
 The new capability state of the process will be completely determined by
@@ -54,10 +54,9 @@ file.
 .BR cap_get_proc ()
 returns a non-NULL value on success, and NULL on failure.
 .PP
-.BR cap_set_proc (),
-.BR capgetp ()
+.BR cap_set_proc ()
 and
-.BR capsetp ()
+.BR capgetp ()
 return zero for success, and \-1 on failure.
 .PP
 On failure,
@@ -71,9 +70,13 @@ or
 .BR cap_set_proc ()
 and
 .BR cap_get_proc ()
-are functions specified in the withdrawn POSIX.1e draft specification.
+are specified in the withdrawn POSIX.1e draft specification.
+.BR capgetp ()
+and
+.BR capsetp ()
+(described below) are Linux extensions.
 .SH "NOTES"
-The library also supports the depreciated function:
+The library also supports the deprecated function:
 .PP
 .BI "cap_t capsetp(pid_t " pid ", cap_t " cap_d );
 .PP
@@ -98,18 +101,46 @@ Kernels that support filesystem capabilities redefine the semantics of
 .B CAP_SETPCAP
 and on such systems this function will always fail for any target not
 equal to the current process.
+.BR capsetp ()
+returns zero for success, and \-1 on failure.
 
 Where supported by the kernel, the function
 .BR capsetp ()
 should be used with care.  It existed, primarily, to overcome an early
 lack of support for capabilities in the filesystems supported by
-Linux.  Please note, by default, the only processes that have
+Linux.  Note that, by default, the only processes that have
 .B CAP_SETPCAP
-available to them are processes started as a kernel-thread.
+available to them are processes started as a kernel thread.
 (Typically this includes
 .BR init (8),
 kflushd and kswapd). You will need to recompile the kernel to modify
 this default.
+.SH EXAMPLE
+The code segment below raises the
+.B CAP_FOWNER
+and
+.B CAP_SETFCAP
+effective capabilities for the caller:
+.nf
+
+    cap_t caps;
+    cap_value_t cap_list[2];
+
+    caps = cap_get_proc();
+    if (caps == NULL)
+        /* handle error */;
+
+    cap_list[0] = CAP_FOWNER;
+    cap_list[1] = CAP_SETFCAP;
+    if (cap_set_flag(caps, CAP_EFFECTIVE, 2, cap_list, CAP_SET) == -1)
+        /* handle error */;
+
+    if (cap_set_proc(caps) == -1)
+        /* handle error */;
+
+    if (cap_free(caps) == -1)
+        /* handle error */;
+.fi
 .SH "SEE ALSO"
 .BR cap_clear (3),
 .BR cap_copy_ext (3),
