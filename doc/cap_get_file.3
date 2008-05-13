@@ -54,13 +54,15 @@ contents of
 A NULL value for
 .IR cap_p
 is used to indicate that capabilities for the file should be deleted.
-For these functions to succeed, the calling process must have the effective
-.B CAP_SETFCAP
-capability enabled and either the effective user ID of the process must match
-the file owner or the calling process must have the effective flag of the
+For these functions to succeed, the calling process must have the
+effective capability,
+.BR CAP_SETFCAP ,
+enabled and either the effective user ID of the process must match the
+file owner or the calling process must have the
 .B CAP_FOWNER
-capability set.  The effects of writing the capability state to any file
-type other than a regular file are undefined.
+flag in its effective capability set.  The effects of writing the
+capability state to any file type other than a regular file are
+undefined.
 .SH "RETURN VALUE"
 .BR cap_get_file ()
 and
