@@ -1,7 +1,7 @@
 .\"
 .\" written by Andrew Main <zefram@dcs.warwick.ac.uk>
 .\"
-.TH CAP_FROM_TEXT 3 "21th Jan 2008" "" "Linux Programmer's Manual"
+.TH CAP_FROM_TEXT 3 "2008-05-10" "" "Linux Programmer's Manual"
 .SH NAME
 cap_from_text, cap_to_text, cap_to_name, cap_from_name \- capability
 state textual representation translation
@@ -12,28 +12,28 @@ state textual representation translation
 .sp
 .BI "char *cap_to_text(cap_t " caps ", ssize_t *" length_p );
 .sp
-.BI "int cap_from_text(const char *" name ", cap_value_t *" cap_p );
+.BI "int cap_from_name(const char *" name ", cap_value_t *" cap_p );
 .sp
-.BI "char *cap_to_text(cap_value_t " cap );
+.BI "char *cap_to_name(cap_value_t " cap );
 .sp
 Link with \fI-lcap\fP.
 .SH DESCRIPTION
-These functions translate a capability state from an internal representation
-into a textual one.
+These functions translate a capability state between
+an internal representation and a textual one.
 The internal representation is managed by the capability
 functions in working storage. The textual representation is a structured,
-human-readable, string suitable for display.
+human-readable string suitable for display.
 .PP
 .BR cap_from_text ()
 allocates and initializes a capability state in working storage. It
-then sets the contents of this newly-created capability state to the
-state represented by a human-readable, nul terminated, character
+then sets the contents of this newly created capability state to the
+state represented by a human-readable, null-terminated character
 string pointed to by
 .IR buf_p .
-It returns a pointer to the newly created capability state.  The
-caller should free any releasable memory,
-when the capability state in working
-storage is no longer required, by calling
+It returns a pointer to the newly created capability state.
+When the capability state in working storage is no longer required,
+the caller should free any releasable memory
+by calling
 .BR cap_free ()
 with
 .I cap_t
@@ -48,7 +48,7 @@ is both set and cleared within a single clause.
 .BR cap_to_text ()
 converts the capability state in working storage identified by
 .I cap_p
-into a null terminated human-readable string.  This function allocates
+into a null-terminated human-readable string.  This function allocates
 any memory necessary to contain the string, and returns a pointer to
 the string.  If the pointer
 .I len_p
@@ -77,16 +77,16 @@ no result is written, but the return code of the function indicates
 whether or not the specified capability can be represented by the
 library.
 .PP
-.BR cap_to_text ()
+.BR cap_to_name ()
 converts a capability index value,
 .IR cap ,
-to a libcap allocated textual string. This string should be deallocated with
+to a libcap-allocated textual string. This string should be deallocated with
 .BR cap_free ().
 .SH "TEXTUAL REPRESENTATION"
 A textual representation of capability sets consists of one or more
 whitespace-separated
 .IR clauses .
-Each clause specifies some operations to a capability set; the set
+Each clause specifies some operations on a capability set; the set
 starts out with all capabilities lowered, and the meaning of the
 string is the state of the capability set after all the clauses have
 been applied in order.
@@ -167,7 +167,60 @@ are specified by the withdrawn POSIX.1e draft specification.
 .BR cap_from_name ()
 and
 .BR cap_to_name ()
-are a Linux extension.
+are Linux extensions.
+.SH EXAMPLE
+The example program below demonstrates the use of
+.BR cap_from_text ()
+and
+.BR cap_to_text ().
+The following shell session shows a some example runs:
+.in +4n
+.nf
+
+$ ./a.out "cap_chown=p cap_chown+e"
+caps_to_text() returned "= cap_chown+ep"
+$ ./a.out "all=pe cap_chown-e cap_kill-pe"
+caps_to_text() returned "=ep cap_chown-e cap_kill-ep"
+
+.fi
+.in
+The source code of the program is as follows:
+.nf
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/capability.h>
+
+#define handle_error(msg) \\
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+int
+main(int argc, char *argv[])
+{
+    cap_t caps;
+    char *txt_caps;
+
+    if (argc != 2) {
+        fprintf(stderr, "%s <textual\-cap\-set>\\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    caps = cap_from_text(argv[1]);
+    if (caps == NULL)
+        handle_error("cap_from_text");
+
+    txt_caps = cap_to_text(caps, NULL);
+    if (txt_caps == NULL)
+        handle_error("cap_to_text");
+
+    printf("caps_to_text() returned \\"%s\\"\\n", txt_caps);
+
+    if (cap_free(txt_caps) != 0 || cap_free(caps) != 0)
+        handle_error("cap_free");
+
+    exit(EXIT_SUCCESS);
+}
+.fi
 .SH "SEE ALSO"
 .BR cap_clear (3),
 .BR cap_copy_ext (3),
