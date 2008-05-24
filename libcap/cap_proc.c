@@ -76,7 +76,7 @@ int capsetp(pid_t pid, cap_t cap_d)
     _cap_debug("setting process capabilities for proc %d", pid);
     cap_d->head.pid = pid;
     error = capset(&cap_d->head, &cap_d->u[0].set);
-    cap_d->head.version = _LINUX_CAPABILITY_VERSION;
+    cap_d->head.version = _LIBCAP_CAPABILITY_VERSION;
     cap_d->head.pid = 0;
 
     return error;

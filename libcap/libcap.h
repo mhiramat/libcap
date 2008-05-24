@@ -25,6 +25,10 @@
 /* include the names for the caps and a definition of __CAP_BITS */
 #include "cap_names.h"
 
+#ifndef _LINUX_CAPABILITY_U32S_1
+# define _LINUX_CAPABILITY_U32S_1          1
+#endif /* ndef _LINUX_CAPABILITY_U32S */
+
 /*
  * Do we match the local kernel?
  */
@@ -34,7 +38,7 @@
 # error Kernel <linux/capability.h> does not support library
 # error file "libcap.h" --> fix and recompile libcap
 
-#elif (_LINUX_CAPABILITY_VERSION == 0x19980330)
+#elif !defined(_LINUX_CAPABILITY_VERSION_2)
 
 # warning Kernel <linux/capability.h> does not support 64-bit capabilities
 # warning and libcap is being built with no support for 64-bit capabilities
@@ -43,12 +47,23 @@
 #  define _LINUX_CAPABILITY_VERSION_1 0x19980330
 # endif
 
-#elif (_LINUX_CAPABILITY_VERSION != 0x20071026)
+# _LIBCAP_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_1
+# _LIBCAP_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_1
+
+#elif (_LINUX_CAPABILITY_VERSION_2 != 0x20071026)
 
 # error Kernel <linux/capability.h> does not match library
 # error file "libcap.h" --> fix and recompile libcap
 
+#else
+
+#define _LIBCAP_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_2
+#define _LIBCAP_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_2
+
 #endif
+
+#undef _LINUX_CAPABILITY_VERSION
+#undef _LINUX_CAPABILITY_U32S
 
 /*
  * This is a pointer to a struct containing three consecutive
@@ -58,10 +73,6 @@
  * the type that is passed to the kernel with the system calls related
  * to processes.
  */
-
-#ifndef _LINUX_CAPABILITY_U32S
-# define _LINUX_CAPABILITY_U32S          1
-#endif /* ndef _LINUX_CAPABILITY_U32S */
 
 #if defined(VFS_CAP_REVISION_MASK) && !defined(VFS_CAP_U32)
 # define VFS_CAP_U32_1                   1
@@ -86,7 +97,7 @@ struct _cap_vfs_cap_data {
 #endif /* ndef CAP_TO_MASK */
 
 #define NUMBER_OF_CAP_SETS      3   /* effective, inheritable, permitted */
-#define __CAP_BLKS   (_LINUX_CAPABILITY_U32S)
+#define __CAP_BLKS   (_LIBCAP_CAPABILITY_U32S)
 #define CAP_SET_SIZE (__CAP_BLKS * sizeof(__u32))
 
 #define CAP_T_MAGIC 0xCA90D0
@@ -95,7 +106,7 @@ struct _cap_struct {
     union {
 	struct __user_cap_data_struct set;
 	__u32 flat[NUMBER_OF_CAP_SETS];
-    } u[_LINUX_CAPABILITY_U32S];
+    } u[_LIBCAP_CAPABILITY_U32S];
 };
 
 /* the maximum bits supportable */
@@ -135,7 +146,7 @@ struct _cap_struct {
 # define _cap_debugcap(s, c, set) do { \
     unsigned _cap_index; \
     fprintf(stderr, __FUNCTION__ "(" __FILE__ ":%d): " s, __LINE__); \
-    for (_cap_index=_LINUX_CAPABILITY_U32S; _cap_index-- > 0; ) { \
+    for (_cap_index=_LIBCAP_CAPABILITY_U32S; _cap_index-- > 0; ) { \
        fprintf(stderr, "%08x", (c).u[_cap_index].flat[set]); \
     } \
     fprintf(stderr, "\n"); \

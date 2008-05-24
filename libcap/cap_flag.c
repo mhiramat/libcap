@@ -106,7 +106,7 @@ int cap_clear_flag(cap_t cap_d, cap_flag_t flag)
 	if (good_cap_t(cap_d)) {
 	    unsigned i;
 
-	    for (i=0; i<_LINUX_CAPABILITY_U32S; i++) {
+	    for (i=0; i<_LIBCAP_CAPABILITY_U32S; i++) {
 		cap_d->u[i].flat[flag] = 0;
 	    }
 	    return 0;

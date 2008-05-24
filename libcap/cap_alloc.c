@@ -28,7 +28,7 @@ cap_t cap_init(void)
     result = (cap_t) (raw_data + 1);
     memset(result, 0, sizeof(*result));
 
-    result->head.version = _LINUX_CAPABILITY_VERSION;
+    result->head.version = _LIBCAP_CAPABILITY_VERSION;
     capget(&result->head, NULL);      /* load the kernel-capability version */
 
     switch (result->head.version) {
