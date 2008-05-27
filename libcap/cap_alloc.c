@@ -40,6 +40,10 @@ cap_t cap_init(void)
     case _LINUX_CAPABILITY_VERSION_2:
 	break;
 #endif
+#ifdef _LINUX_CAPABILITY_VERSION_3
+    case _LINUX_CAPABILITY_VERSION_3:
+	break;
+#endif
     default:                          /* No idea what to do */
 	cap_free(result);
 	result = NULL;

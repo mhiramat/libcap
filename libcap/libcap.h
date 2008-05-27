@@ -50,6 +50,16 @@
 # _LIBCAP_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_1
 # _LIBCAP_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_1
 
+#elif defined(_LINUX_CAPABILITY_VERSION_3)
+
+# if (_LINUX_CAPABILITY_VERSION_3 != 0x20080522)
+#  error Kernel <linux/capability.h> v3 does not match library
+#  error file "libcap.h" --> fix and recompile libcap
+# else
+#  define _LIBCAP_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_3
+#  define _LIBCAP_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_3
+# endif
+
 #elif (_LINUX_CAPABILITY_VERSION_2 != 0x20071026)
 
 # error Kernel <linux/capability.h> does not match library
@@ -57,8 +67,8 @@
 
 #else
 
-#define _LIBCAP_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_2
-#define _LIBCAP_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_2
+# define _LIBCAP_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_2
+# define _LIBCAP_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_2
 
 #endif
 

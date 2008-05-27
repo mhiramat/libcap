@@ -158,6 +158,9 @@ cap_t cap_from_text(const char *str)
     case _LINUX_CAPABILITY_VERSION_2:
 	cap_blks = _LINUX_CAPABILITY_U32S_2;
 	break;
+    case _LINUX_CAPABILITY_VERSION_3:
+	cap_blks = _LINUX_CAPABILITY_U32S_3;
+	break;
     default:
 	errno = EINVAL;
 	return NULL;
@@ -386,6 +389,9 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 	break;
     case _LINUX_CAPABILITY_VERSION_2:
 	cap_blks = _LINUX_CAPABILITY_U32S_2;
+	break;
+    case _LINUX_CAPABILITY_VERSION_3:
+	cap_blks = _LINUX_CAPABILITY_U32S_3;
 	break;
     default:
 	errno = EINVAL;
