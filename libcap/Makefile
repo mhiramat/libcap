@@ -58,7 +58,7 @@ install: all
 	mkdir -p -m 0755 $(INCDIR)/sys
 	install -m 0644 include/sys/capability.h $(INCDIR)/sys
 	mkdir -p -m 0755 $(LIBDIR)
-	install -m 0644 $(STALIBNAME) $(LIBDIR)/$(MINLIBNAME)
+	install -m 0644 $(STALIBNAME) $(LIBDIR)/$(STALIBNAME)
 	install -m 0644 $(MINLIBNAME) $(LIBDIR)/$(MINLIBNAME)
 	ln -sf $(MINLIBNAME) $(LIBDIR)/$(MAJLIBNAME)
 	ln -sf $(MAJLIBNAME) $(LIBDIR)/$(LIBNAME)
