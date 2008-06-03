@@ -42,34 +42,28 @@ MINOR=10
 
 # Compilation specifics
 
-CC ?= gcc
-AR ?= ar
-RANLIB ?= ranlib
-COPTFLAGS=-O2
-DEBUG=-g #-DDEBUG
+CC := gcc
+CFLAGS := -O2
+BUILD_CC := $(CC)
+BUILD_CFLAGS := $(CFLAGS)
+AR := ar
+RANLIB := ranlib
+DEBUG = -g #-DDEBUG
 WARNINGS=-fPIC -Wall -Wwrite-strings \
         -Wpointer-arith -Wcast-qual -Wcast-align \
         -Wstrict-prototypes -Wmissing-prototypes \
         -Wnested-externs -Winline -Wshadow
 LD=$(CC) -Wl,-x -shared
-LDFLAGS=#-g
+LDFLAGS := #-g
 
-KERNEL_HEADERS = $(topdir)/libcap/include
+KERNEL_HEADERS := $(topdir)/libcap/include
 SYSTEM_HEADERS = /usr/include
 IPATH += -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
 INCS=$(topdir)/libcap/include/sys/capability.h
-LIBS=-L$(topdir)/libcap -lcap
-CFLAGS=-Dlinux $(WARNINGS) $(DEBUG) $(COPTFLAG) $(IPATH)
-PAM_CAP ?= $(shell if [ -f /usr/include/security/pam_modules.h ]; then echo yes ; else echo no ; fi)
+LDFLAGS += -L$(topdir)/libcap
+CFLAGS += -Dlinux $(WARNINGS) $(DEBUG) $(IPATH)
+PAM_CAP := $(shell if [ -f /usr/include/security/pam_modules.h ]; then echo yes ; else echo no ; fi)
 # Global cleanup stuff
 
 LOCALCLEAN=rm -f *~ core
 DISTCLEAN=@find . \( -name '*.orig' -o -name '*.rej' \) | xargs rm -f
-
-# Flags to pass down recursive makes
-
-MAKE_DEFS = CC='$(CC)' CFLAGS='$(CFLAGS)' \
-	LD='$(LD)' LIBS='$(LIBS)' LDFLAGS='$(LDFLAGS)' \
-	VERSION='$(VERSION)' MINOR='$(MINOR)' \
-	LIBDIR='$(LIBDIR)' INCDIR='$(INCDIR)' \
-	SBINDIR='$(SBINDIR)' MANDIR='$(MANDIR)'

@@ -6,10 +6,13 @@ include $(topdir)/Make.Rules
 #
 PROGS=getpcaps getcap setcap capsh
 
+LDFLAGS += --static 
+LDLIBS += -lcap
+
 all: $(PROGS)
 
 $(PROGS): %: %.o
-	$(CC) --static $(COPTFLAG) $(LDFLAGS) -o $@ $< $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 %.o: %.c $(INCS)
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -17,7 +17,7 @@ OBJS=$(addsuffix .o, $(FILES))
 MAJLIBNAME=$(LIBNAME).$(VERSION)
 MINLIBNAME=$(MAJLIBNAME).$(MINOR)
 GPERF_OUTPUT = _caps_output.gperf
-LDFLAGS+=-lattr
+LDFLAGS += -lattr
 
 all: $(MINLIBNAME) $(STALIBNAME)
 
@@ -27,7 +27,7 @@ INCLUDE_GPERF_OUTPUT = -include $(GPERF_OUTPUT)
 endif
 
 _makenames: _makenames.c cap_names.sed
-	$(CC) $(CFLAGS) $< -o $@
+	$(BUILD_CC) $(BUILD_CFLAGS) $< -o $@
 
 cap_names.h: _makenames
 	./_makenames > cap_names.h
@@ -40,11 +40,11 @@ cap_names.sed: Makefile $(KERNEL_HEADERS)/linux/capability.h
 	@sed -ne '/^#define[ \t]CAP[_A-Z]\+[ \t]\+[0-9]\+/{s/^#define \([^ \t]*\)[ \t]*\([^ \t]*\)/\{\"\1\",\2\},/;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;p;}' < $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
 
 $(STALIBNAME): $(OBJS)
-	$(AR) rcs $(STALIBNAME) $(OBJS)
-	$(RANLIB) $(STALIBNAME)
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 $(MINLIBNAME): $(OBJS)
-	$(LD) $(LDFLAGS) $(COPTFLAG) -Wl,-soname,$(MAJLIBNAME) -o $@ $(OBJS)
+	$(LD) $(CFLAGS) $(LDFLAGS) -Wl,-soname,$(MAJLIBNAME) -o $@ $^
 	ln -sf $(MINLIBNAME) $(MAJLIBNAME)
 	ln -sf $(MAJLIBNAME) $(LIBNAME)
 

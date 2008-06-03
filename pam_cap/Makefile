@@ -3,6 +3,9 @@
 topdir=$(shell pwd)/..
 include ../Make.Rules
 
+LDLIBS += -lcap
+CFLAGS += -fPIC
+
 all: pam_cap.so
 	$(MAKE) testcompile
 
@@ -11,13 +14,13 @@ install: all
 	install -m 0755 pam_cap.so $(LIBDIR)/security
 
 pam_cap.so: pam_cap.o
-	$(LD) -o pam_cap.so $< $(LIBS)
+	$(LD) $(CFLAGS) -o pam_cap.so $< $(LDLIBS)
 
 pam_cap.o: pam_cap.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 testcompile: test.c pam_cap.o
-	$(CC) $(CFLAGS) -o $@ $+ -lpam -ldl $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $+ -lpam -ldl $(LDLIBS)
 
 clean:
 	rm -f *.o *.so testcompile *~
