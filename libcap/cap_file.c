@@ -5,7 +5,7 @@
  */
 
 #include <sys/types.h>
-#include <attr/xattr.h>
+#include <sys/xattr.h>
 #include <byteswap.h>
 #include <sys/stat.h>
 #include <unistd.h>
