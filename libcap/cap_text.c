@@ -406,12 +406,20 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
 
     memset(histo, 0, sizeof(histo));
 
-    for (n = cap_maxbits; n--; )
+    /* default prevailing state to the upper - unnamed bits */
+    for (n = cap_maxbits-1; n > __CAP_BITS; n--)
 	histo[getstateflags(caps, n)]++;
 
+    /* find which combination of capability sets shares the most bits */
     for (m=t=7; t--; )
 	if (histo[t] > histo[m])
 	    m = t;
+
+    /* capture remaining bits - selecting m from only the unnamed bits,
+       we maximize the likelihood that we won't see numeric capability
+       values in the text output. */
+    while (n--)
+	histo[getstateflags(caps, n)]++;
 
     /* blank is not a valid capability set */
     p = sprintf(buf, "=%s%s%s",
