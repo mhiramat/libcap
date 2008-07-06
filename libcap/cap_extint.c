@@ -9,7 +9,7 @@
 
 /*
  * External representation for capabilities. (exported as a fixed
- * length (void *))
+ * length)
  */
 #define CAP_EXT_MAGIC "\220\302\001\121"
 #define CAP_EXT_MAGIC_SIZE 4
@@ -18,8 +18,10 @@ const static __u8 external_magic[CAP_EXT_MAGIC_SIZE+1] = CAP_EXT_MAGIC;
 struct cap_ext_struct {
     __u8 magic[CAP_EXT_MAGIC_SIZE];
     __u8 length_of_capset;
-/* note, we arrange these so the caps are stacked with byte-size
-   resolution */
+    /*
+     * note, we arrange these so the caps are stacked with byte-size
+     * resolution
+     */
     __u8 bytes[CAP_SET_SIZE][NUMBER_OF_CAP_SETS];
 };
 
@@ -77,11 +79,6 @@ ssize_t cap_copy_ext(void *cap_ext, cap_t cap_d, ssize_t length)
  * the internal rep should be liberated with cap_free().
  */
 
-/*
- * XXX - need to take a little more care when importing small
- * capability sets.
- */
-
 cap_t cap_copy_int(const void *cap_ext)
 {
     const struct cap_ext_struct *export =
@@ -90,8 +87,8 @@ cap_t cap_copy_int(const void *cap_ext)
     int set, blen;
 
     /* Does the external representation make sense? */
-    if (export == NULL || !memcmp(export->magic, external_magic
-				  , CAP_EXT_MAGIC_SIZE)) {
+    if ((export == NULL)
+	|| memcmp(export->magic, external_magic, CAP_EXT_MAGIC_SIZE)) {
 	errno = EINVAL;
 	return NULL;
     }
