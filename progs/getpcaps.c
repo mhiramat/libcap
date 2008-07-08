@@ -1,9 +1,7 @@
 /*
- * $Id: getpcaps.c,v 1.2 1999/11/18 06:04:25 morgan Exp $
+ * Copyright (c) 1997,2008 Andrew G. Morgan  <morgan@kernel.org>
  *
- * Copyright (c) 1997 Andrew G. Morgan  <morgan@kernel.org>
- *
- * This displays the capabilities of a given process.
+ * This displays the capabilities of given target process(es).
  */
 
 #include <sys/types.h>
@@ -11,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#undef _POSIX_SOURCE
 #include <sys/capability.h>
 
 static void usage(void)
@@ -28,28 +25,22 @@ static void usage(void)
 int main(int argc, char **argv)
 {
     int retval = 0;
-    cap_t cap_d;
 
     if (argc < 2) {
 	usage();
     }
 
-    cap_d = cap_init();
     for ( ++argv; --argc > 0; ++argv ) {
 	ssize_t length;
 	int pid;
-
-	if (cap_d == NULL) {
-	    fprintf(stderr, "Failed to make a blank capability set\n"
-		    " (%s)\n", strerror(errno));
-	    exit(1);
-	}
+	cap_t cap_d;
 
 	pid = atoi(argv[0]);
-	/* this is a non-POSIX function */
-	if (capgetp(pid, cap_d)) {
+
+	cap_d = cap_get_pid(pid);
+	if (cap_d == NULL) {
 		fprintf(stderr, "Failed to get cap's for proccess %d:"
-			" (%s) - need new libcap?\n", pid, strerror(errno));
+			" (%s)\n", pid, strerror(errno));
 		retval = 1;
 		continue;
 	} else {
@@ -57,6 +48,7 @@ int main(int argc, char **argv)
 	    fprintf(stderr, "Capabilities for `%s': %s\n", *argv, result);
 	    cap_free(result);
 	    result = NULL;
+	    cap_free(cap_d);
 	}
     }
 

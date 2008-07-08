@@ -23,10 +23,6 @@
 /* Maximum output text length (16 per cap) */
 #define CAP_TEXT_SIZE    (16*__CAP_MAXBITS)
 
-#define LIBCAP_EFF   01
-#define LIBCAP_INH   02
-#define LIBCAP_PER   04
-
 /*
  * Parse a textual representation of capabilities, returning an internal
  * representation.

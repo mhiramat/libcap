@@ -95,6 +95,7 @@ extern int     cap_set_file(const char *, cap_t);
 
 /* libcap/cap_proc.c */
 extern cap_t   cap_get_proc(void);
+extern cap_t   cap_get_pid(pid_t);
 extern int     cap_set_proc(cap_t);
 
 /* libcap/cap_extint.c */
@@ -108,9 +109,17 @@ extern char *  cap_to_text(cap_t, ssize_t *);
 extern int     cap_from_name(const char *, cap_value_t *);
 extern char *  cap_to_name(cap_value_t);
 
+#define CAP_DIFFERS(result, flag)  (((result) & (1 << (flag))) != 0)
+extern int     cap_compare(cap_t, cap_t);
+
+/* system calls - look to libc for function to system call mapping */
 extern int capset(cap_user_header_t header, cap_user_data_t data);
 extern int capget(cap_user_header_t header, const cap_user_data_t data);
+
+/* deprecated - use cap_get_pid() */
 extern int capgetp(pid_t pid, cap_t cap_d);
+
+/* not valid with filesystem capability support - use cap_set_proc() */
 extern int capsetp(pid_t pid, cap_t cap_d);
 
 #ifdef __cplusplus

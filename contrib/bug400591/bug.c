@@ -15,10 +15,7 @@ int main (int argc, char *argv[])
   void *buffer;
   char *text1, *text2;
 
-  caps = cap_init();
-  assert (caps);
-  
-  assert(capgetp(1, caps) == 0);
+  assert((caps = cap_get_pid(1)));
 
   text1 = cap_to_text(caps, NULL);
   assert(text1);
@@ -35,10 +32,12 @@ int main (int argc, char *argv[])
   caps2 = cap_copy_int(buffer);
   assert (caps2);
   
-  text2 = cap_to_text(caps, NULL);
+  text2 = cap_to_text(caps2, NULL);
   assert(text2);
 
   assert(strcmp(text1, text2) == 0);
+
+  assert(cap_compare(caps, caps2) == 0);
 
   return 0;
 }

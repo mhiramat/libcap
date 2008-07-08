@@ -142,6 +142,13 @@ struct _cap_struct {
 #define good_cap_string(c)   __libcap_check_magic(c, CAP_S_MAGIC)
 
 /*
+ * These match CAP_DIFFERS() expectations
+ */
+#define LIBCAP_EFF   (1 << CAP_EFFECTIVE)
+#define LIBCAP_INH   (1 << CAP_INHERITABLE)
+#define LIBCAP_PER   (1 << CAP_PERMITTED)
+
+/*
  * library debugging
  */
 #ifdef DEBUG

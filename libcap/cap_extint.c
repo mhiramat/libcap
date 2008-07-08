@@ -98,7 +98,7 @@ cap_t cap_copy_int(const void *cap_ext)
        return NULL;
 
     blen = export->length_of_capset;
-    for (set=0; set<=NUMBER_OF_CAP_SETS; ++set) {
+    for (set=0; set<NUMBER_OF_CAP_SETS; ++set) {
 	int blk;
 	int bno = 0;
 	for (blk=0; blk<(CAP_SET_SIZE/sizeof(__u32)); ++blk) {

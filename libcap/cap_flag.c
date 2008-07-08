@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997-8 Andrew G. Morgan <morgan@kernel.org>
+ * Copyright (c) 1997-8,2008 Andrew G. Morgan <morgan@kernel.org>
  *
  * This file deals with flipping of capabilities on internal
  * capability sets as specified by POSIX.1e (formerlly, POSIX 6).
@@ -122,3 +122,29 @@ int cap_clear_flag(cap_t cap_d, cap_flag_t flag)
     }
 }
 
+/*
+ * Compare two capability sets
+ */
+
+int cap_compare(cap_t a, cap_t b)
+{
+    unsigned i;
+    int result;
+
+    if (!(good_cap_t(a) && good_cap_t(b))) {
+	_cap_debug("invalid arguments");
+	errno = EINVAL;
+	return -1;
+    }
+
+    for (i=0, result=0; i<_LIBCAP_CAPABILITY_U32S; i++) {
+	result |=
+	    ((a->u[i].flat[CAP_EFFECTIVE] != b->u[i].flat[CAP_EFFECTIVE])
+	     ? LIBCAP_EFF : 0)
+	    | ((a->u[i].flat[CAP_INHERITABLE] != b->u[i].flat[CAP_INHERITABLE])
+	       ? LIBCAP_INH : 0)
+	    | ((a->u[i].flat[CAP_PERMITTED] != b->u[i].flat[CAP_PERMITTED])
+	       ? LIBCAP_PER : 0);
+    }
+    return result;
+}

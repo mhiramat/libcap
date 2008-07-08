@@ -62,6 +62,27 @@ int capgetp(pid_t pid, cap_t cap_d)
     return error;
 }
 
+/* allocate space for and return capabilities of target process */
+
+cap_t cap_get_pid(pid_t pid)
+{
+    cap_t result;
+
+    result = cap_init();
+    if (result) {
+	if (capgetp(pid, result) != 0) {
+	    int my_errno;
+
+	    my_errno = errno;
+	    cap_free(result);
+	    errno = my_errno;
+	    result = NULL;
+	}
+    }
+
+    return result;
+}
+
 /* set the caps on a specific process/pg etc.. */
 
 int capsetp(pid_t pid, cap_t cap_d)
