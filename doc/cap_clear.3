@@ -1,6 +1,6 @@
 .TH CAP_CLEAR 3 "2008-05-11" "" "Linux Programmer's Manual"
 .SH NAME
-cap_clear, cap_get_flag, cap_set_flag \- capability data object manipulation
+cap_clear, cap_clear_flag, cap_get_flag, cap_set_flag, cap_compare \- capability data object manipulation
 .SH SYNOPSIS
 .nf
 .B #include <sys/capability.h>
@@ -15,6 +15,8 @@ cap_clear, cap_get_flag, cap_set_flag \- capability data object manipulation
 .BI "int cap_set_flag(cap_t " cap_p ", cap_flag_t " flag ", int " ncap ,
 .BI "                 const cap_value_t *" caps \
 ", cap_flag_value_t " value ");"
+.sp
+.BI "int cap_compare(cap_t " cap_a ", cap_t " cap_b ");"
 .sp
 Link with \fI-lcap\fP.
 .fi
@@ -82,13 +84,33 @@ The argument,
 .IR ncap ,
 is used to specify the number of capabilities in the array,
 .IR caps .
+.PP
+.BR cap_compare ()
+compares two full capability sets and, in the spirit of
+.BR memcmp (),
+returns zero if the two capability sets are identical. A positive
+return value,
+.BR status ,
+indicates there is a difference between them. The
+returned value carries further information about which of three sets,
+.I cap_flag_t
+.BR flag ,
+differ. Specifically, the macro
+.B CAP_DIFFERS
+.RI ( status ", " flag )
+evaluates to 0 if the returned status differs in its
+.I flag
+components.
 .SH "RETURN VALUE"
 .BR cap_clear (),
 .BR cap_clear_flag (),
 .BR cap_get_flag ()
-and
 .BR cap_set_flag ()
-return zero on success, and \-1 on failure.
+and
+.BR cap_compare ()
+return zero on success, and \-1 on failure. Other return values for
+.BR cap_compare ()
+are described above.
 .PP
 On failure,
 .I errno
@@ -98,7 +120,9 @@ indicating that one of the arguments is invalid.
 .SH "CONFORMING TO"
 These functions are as per the withdrawn POSIX.1e draft specification.
 .BR cap_clear_flag ()
-is a Linux extension.
+and
+.BR cap_compare ()
+are Linux extensions.
 .SH "SEE ALSO"
 .BR cap_copy_ext (3),
 .BR cap_from_text (3),
