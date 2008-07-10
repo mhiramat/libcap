@@ -31,7 +31,7 @@ struct task_struct;
 #define _LINUX_CAPABILITY_VERSION_1  0x19980330
 #define _LINUX_CAPABILITY_U32S_1     1
 
-#define _LINUX_CAPABILITY_VERSION_2  0x20071026  /* depreciated - use v3 */
+#define _LINUX_CAPABILITY_VERSION_2  0x20071026  /* deprecated - use v3 */
 #define _LINUX_CAPABILITY_U32S_2     2
 
 #define _LINUX_CAPABILITY_VERSION_3  0x20080522
@@ -500,6 +500,8 @@ static inline kernel_cap_t cap_raise_nfsd_set(const kernel_cap_t a,
 extern const kernel_cap_t __cap_empty_set;
 extern const kernel_cap_t __cap_full_set;
 extern const kernel_cap_t __cap_init_eff_set;
+
+kernel_cap_t cap_set_effective(const kernel_cap_t pE_new);
 
 int capable(int cap);
 int __capable(struct task_struct *t, int cap);
