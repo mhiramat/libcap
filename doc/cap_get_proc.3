@@ -8,11 +8,13 @@ processes
 .SH SYNOPSIS
 .B #include <sys/capability.h>
 .sp
-.B cap_t cap_get_proc(void);
+.B "cap_t cap_get_proc(void);"
 .sp
 .BI "int cap_set_proc(cap_t " cap_p );
 .sp
-.BI "cap_t capgetp(pid_t " pid ", cap_t " cap_d );
+.B #include <sys/types.h>
+.sp
+.BI "cap_t cap_get_pid(pid_t " pid );
 .sp
 Link with \fI-lcap\fP.
 .SH DESCRIPTION
@@ -40,8 +42,8 @@ is set for any capability not currently permitted for the calling process,
 the function will fail, and the capability state of the process will remain
 unchanged.
 .PP
-.BR capgetp ()
-fills an existing
+.BR cap_get_pid ()
+returns
 .IR cap_d ,
 see 
 .BR cap_init (3),
@@ -51,12 +53,14 @@ This information can also be obtained from the
 .I /proc/<pid>/status
 file.
 .SH "RETURN VALUE"
+The functions
 .BR cap_get_proc ()
-returns a non-NULL value on success, and NULL on failure.
-.PP
-.BR cap_set_proc ()
 and
-.BR capgetp ()
+.BR cap_get_pid ()
+return a non-NULL value on success, and NULL on failure.
+.PP
+The function
+.BR cap_set_proc ()
 return zero for success, and \-1 on failure.
 .PP
 On failure,
@@ -71,14 +75,24 @@ or
 and
 .BR cap_get_proc ()
 are specified in the withdrawn POSIX.1e draft specification.
-.BR capgetp ()
-and
-.BR capsetp ()
-(described below) are Linux extensions.
+.BR cap_get_pid ()
+is a Linux extension.
 .SH "NOTES"
-The library also supports the deprecated function:
+The library also supports the deprecated functions:
 .PP
-.BI "cap_t capsetp(pid_t " pid ", cap_t " cap_d );
+.BI "int capgetp(pid_t " pid ", cap_t " cap_d );
+.PP
+.BI "int capsetp(pid_t " pid ", cap_t " cap_d );
+.PP
+.BR capgetp ()
+attempts to obtain the capabilities of some other process; storing the
+capabilities in a pre-allocated
+.IR cap_d . See
+.BR cap_init ()
+for information on allocating an empty capability set. This function,
+.BR capgetp (),
+is deprecated, you should use
+.BR cap_get_pid ().
 .PP
 .BR capsetp ()
 attempts to set the capabilities of some other process(es),
@@ -142,6 +156,7 @@ effective capabilities for the caller:
         /* handle error */;
 .fi
 .SH "SEE ALSO"
+.BR libcap (3),
 .BR cap_clear (3),
 .BR cap_copy_ext (3),
 .BR cap_from_text (3),
