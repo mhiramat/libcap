@@ -37,7 +37,7 @@ $(GPERF_OUTPUT): cap_names.sed
 
 cap_names.sed: Makefile $(KERNEL_HEADERS)/linux/capability.h
 	@echo "=> making cap_names.c from <linux/capability.h>"
-	@sed -ne '/^#define[ \t]CAP[_A-Z]\+[ \t]\+[0-9]\+/{s/^#define \([^ \t]*\)[ \t]*\([^ \t]*\)/\{\"\1\",\2\},/;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;p;}' < $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
+	sed -ne '/^#define[ \t]CAP[_A-Z]\+[ \t]\+[0-9]\+/{s/^#define \([^ \t]*\)[ \t]*\([^ \t]*\)/\{\"\1\",\2\},/;y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/;p;}' < $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
 
 $(STALIBNAME): $(OBJS)
 	$(AR) rcs $@ $^

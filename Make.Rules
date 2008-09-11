@@ -42,10 +42,13 @@ MINOR=11
 
 # Compilation specifics
 
+KERNEL_HEADERS := $(topdir)/libcap/include
+IPATH += -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
+
 CC := gcc
 CFLAGS := -O2
 BUILD_CC := $(CC)
-BUILD_CFLAGS := $(CFLAGS)
+BUILD_CFLAGS := $(CFLAGS) $(IPATH)
 AR := ar
 RANLIB := ranlib
 DEBUG = -g #-DDEBUG
@@ -56,9 +59,7 @@ WARNINGS=-fPIC -Wall -Wwrite-strings \
 LD=$(CC) -Wl,-x -shared
 LDFLAGS := #-g
 
-KERNEL_HEADERS := $(topdir)/libcap/include
 SYSTEM_HEADERS = /usr/include
-IPATH += -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
 INCS=$(topdir)/libcap/include/sys/capability.h
 LDFLAGS += -L$(topdir)/libcap
 CFLAGS += -Dlinux $(WARNINGS) $(DEBUG) $(IPATH)
