@@ -14,11 +14,6 @@
 
 #include <ctype.h>
 #include <limits.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-#define SYS_DIR_ROOT_NAMES "/sys/kernel/capability/names"
-#define SYS_DIR_ROOT_CODES "/sys/kernel/capability/codes"
 
 /* Maximum output text length (16 per cap) */
 #define CAP_TEXT_SIZE    (16*__CAP_MAXBITS)
@@ -80,9 +75,7 @@ static int lookupname(char const **strp)
 	*strp = str.constp;
 	return n;
     } else {
-	int fd;
-	char *tmp;
-	int c, n;
+	int c;
 	unsigned len;
 
 	for (len=0; (c = str.constp[len]); ++len) {
@@ -101,6 +94,7 @@ static int lookupname(char const **strp)
 	}
 #else /* ie., ndef GPERF_DOWNCASE */
 	char const *s;
+	unsigned n;
 
 	for (n = __CAP_BITS; n--; )
 	    if (_cap_names[n] && (s = namcmp(str.constp, _cap_names[n]))) {
@@ -109,25 +103,6 @@ static int lookupname(char const **strp)
 	    }
 #endif /* def GPERF_DOWNCASE */
 
-	asprintf(&tmp, SYS_DIR_ROOT_NAMES "/%s", str.constp);
-	str.constp += len;
-	tmp[sizeof(SYS_DIR_ROOT_NAMES) + len] = '\0';
-
-	fd = open(tmp, O_RDONLY);
-	free(tmp);
-
-	if (fd >= 0) {
-	    char ref[10];
-
-	    len = read(fd, ref, 9);
-	    close(fd);
-	    if (len > 0) {
-		ref[len] = '\0';
-		n = strtoul(ref, NULL, 10);
-		*strp = str.constp;
-		return n;
-	    }
-	}
 	return -1;   	/* No definition available */
     }
 }
@@ -312,24 +287,8 @@ char *cap_to_name(cap_value_t cap)
 # error Recompile with correctly sized numeric array
 #endif
 	char *tmp, *result;
-	int fd, len;
 
-	asprintf(&tmp, SYS_DIR_ROOT_CODES "/%u", cap);
-	fd = open(tmp, O_RDONLY);
-
-	if (fd >= 0) {
-	    len = read(fd, tmp, sizeof(SYS_DIR_ROOT_CODES));
-	    close(fd);
-	    if (len > 0) {
-		tmp[len-1] = '\0';
-	    } else {
-		goto default_to_numeric;
-	    }
-	} else {
-	default_to_numeric:
-	    sprintf(tmp, "%u", cap);
-	}
-
+	asprintf(&tmp, "%u", cap);
 	result = _libcap_strdup(tmp);
 	free(tmp);
 
