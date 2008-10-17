@@ -155,14 +155,14 @@ struct _cap_struct {
 
 #include <stdio.h>
 # define _cap_debug(f, x...)  do { \
-    fprintf(stderr, __FUNCTION__ "(" __FILE__ ":%d): ", __LINE__); \
+    fprintf(stderr, "%s(%s:%d): ", __FUNCTION__, __FILE__, __LINE__); \
     fprintf(stderr, f, ## x); \
     fprintf(stderr, "\n"); \
 } while (0)
 
 # define _cap_debugcap(s, c, set) do { \
     unsigned _cap_index; \
-    fprintf(stderr, __FUNCTION__ "(" __FILE__ ":%d): " s, __LINE__); \
+    fprintf(stderr, "%s(%s:%d): %s", __FUNCTION__, __FILE__, __LINE__, s); \
     for (_cap_index=_LIBCAP_CAPABILITY_U32S; _cap_index-- > 0; ) { \
        fprintf(stderr, "%08x", (c).u[_cap_index].flat[set]); \
     } \

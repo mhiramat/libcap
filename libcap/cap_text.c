@@ -365,9 +365,12 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
     for (n = cap_maxbits-1; n > __CAP_BITS; n--)
 	histo[getstateflags(caps, n)]++;
 
-    /* find which combination of capability sets shares the most bits */
+    /* find which combination of capability sets shares the most bits
+       we bias to preferring non-set (m=0) with the >= 0 test. Failing
+       to do this causes strange things to happen with older systems
+       that don't know about bits 32+. */
     for (m=t=7; t--; )
-	if (histo[t] > histo[m])
+	if (histo[t] >= histo[m])
 	    m = t;
 
     /* capture remaining bits - selecting m from only the unnamed bits,
