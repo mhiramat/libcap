@@ -33,7 +33,7 @@ cap_names.h: _makenames
 	./_makenames > cap_names.h
 
 $(GPERF_OUTPUT): cap_names.sed
-	sed -e 's/[\{\"]//g' -e 's/\}.*//' -e '1istruct __cap_token_s { const char *name; int index; };\n%{\nconst struct __cap_token_s *__cap_lookup_name(const char *, unsigned int);\n%}\n%%' $< | gperf --ignore-case --language=ANSI-C --readonly --null-strings --global-table --hash-function-name=__cap_hash_name --lookup-function-name="__cap_lookup_name" -c -t -m20 | indent -kr > $@
+	sed -e 's/[\{\"]//g' -e 's/\}.*//' -e '1istruct __cap_token_s { const char *name; int index; };\n%{\nconst struct __cap_token_s *__cap_lookup_name(const char *, unsigned int);\n%}\n%%' $< | gperf --ignore-case --language=ANSI-C --readonly --null-strings --global-table --hash-function-name=__cap_hash_name --lookup-function-name="__cap_lookup_name" -c -t -m20 $(INDENT) > $@
 
 cap_names.sed: Makefile $(KERNEL_HEADERS)/linux/capability.h
 	@echo "=> making cap_names.c from <linux/capability.h>"

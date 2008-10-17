@@ -14,13 +14,13 @@ install: all
 	install -m 0755 pam_cap.so $(LIBDIR)/security
 
 pam_cap.so: pam_cap.o
-	$(LD) $(CFLAGS) -o pam_cap.so $< $(LDLIBS)
+	$(LD) $(LDFLAGS) -o pam_cap.so $< $(LDLIBS)
 
 pam_cap.o: pam_cap.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 testcompile: test.c pam_cap.o
-	$(CC) $(CFLAGS) -o $@ $+ -lpam -ldl $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $+ -lpam -ldl $(LDLIBS)
 
 clean:
 	rm -f *.o *.so testcompile *~
