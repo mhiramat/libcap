@@ -5,13 +5,14 @@ include $(topdir)/Make.Rules
 # Programs: all of the examples that we will compile
 #
 PROGS=getpcaps getcap setcap capsh
+BUILD=$(PROGS) verify-caps
 
 LDFLAGS += --static 
 LDLIBS += -lcap
 
-all: $(PROGS)
+all: $(BUILD)
 
-$(PROGS): %: %.o
+$(BUILD): %: %.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(LDLIBS)
 
 %.o: %.c $(INCS)
@@ -25,4 +26,4 @@ install: all
 
 clean:
 	$(LOCALCLEAN)
-	rm -f *.o $(PROGS) tcapsh ping
+	rm -f *.o $(BUILD) tcapsh ping
