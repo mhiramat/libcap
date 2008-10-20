@@ -7,7 +7,9 @@ include $(topdir)/Make.Rules
 PROGS=getpcaps getcap setcap capsh
 BUILD=$(PROGS) verify-caps
 
+ifneq ($(DYNAMIC),yes)
 LDFLAGS += --static 
+endif
 LDLIBS += -lcap
 
 all: $(BUILD)
