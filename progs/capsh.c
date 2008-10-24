@@ -311,6 +311,30 @@ int main(int argc, char *argv[], char *envp[])
 			value, strerror(errno));
 		exit(1);
 	    }
+	} else if (!memcmp("--decode=", argv[i], 9)) {
+	    unsigned long long value;
+	    unsigned cap;
+	    const char *sep = "";
+
+	    /* Note, if capabilities become longer than 64-bits we'll need
+	       to fixup the following code.. */
+	    value = strtoull(argv[i]+9, NULL, 16);
+	    printf("0x%016llx=", value);
+
+	    for (cap=0; value >> cap; ++cap) {
+		if (value & (1ULL << cap)) {
+		    const char *ptr;
+
+		    ptr = cap_to_name(cap);
+		    if (ptr != NULL) {
+			printf("%s%s", sep, ptr);
+		    } else {
+			printf("%s%u", sep, cap);
+		    }
+		    sep = ",";
+		}
+	    }
+	    printf("\n");
 	} else if (!strcmp("--print", argv[i])) {
 	    unsigned cap;
 	    int set;
@@ -375,6 +399,7 @@ int main(int argc, char *argv[], char *envp[])
 	    printf("usage: %s [args ...]\n"
 		   "  --help         this message\n"
 		   "  --print        display capability relevant state\n"
+		   "  --decode=xxx   decode a hex string to a list of caps\n"
 		   "  --drop=xxx     remove xxx,.. capabilities from bset\n"
 		   "  --caps=xxx     set caps as per cap_from_text()\n"
 		   "  --inh=xxx      set xxx,.. inheritiable set\n"
