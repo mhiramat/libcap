@@ -166,6 +166,7 @@ int main(int argc, char **argv)
 		    perror("unable to set CAP_SETFCAP effective capability");
 		    exit(1);
 		}
+		tried_to_cap_setfcap = 1;
 	    }
 	    retval = cap_set_file(*++argv, cap_d);
 	    if (retval != 0) {
