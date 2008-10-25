@@ -5,10 +5,10 @@ include $(topdir)/Make.Rules
 # Programs: all of the examples that we will compile
 #
 PROGS=getpcaps getcap setcap capsh
-BUILD=$(PROGS) verify-caps
+BUILD=$(PROGS)
 
 ifneq ($(DYNAMIC),yes)
-LDFLAGS += --static 
+LDFLAGS += --static
 endif
 LDLIBS += -lcap
 
