@@ -1,24 +1,11 @@
-* See GIT repository for recent history
+For release notes and other info pointers:
 
-  git://master.kernel.org/pub/scm/libs/libcap/libcap.git
+  http://sites.google.com/site/fullycapable/
 
-libcap 1.10
+See GIT repository for detailed source history
 
-* fixed cap_free to abide by correct documention - use it to free
-  strings returned by cap_to_text().
+  http://git.kernel.org/?p=libs/libcap/libcap.git;a=summary
 
-libcap 1.03
+Or simply download the source:
 
-* Fix from Chris Evans relating to not seeing all of the capabilities
-  in the automatically generated cap_names.h file (fix in
-  _makenames.c)
-
-libcap 1.02
-
-* fixed kernel version matching to always fail when attempting to
-  use an incompatible version of the library with the current kernel
-
-libcap 1.01
-
-* bug fixes from peeterj.
-* documentation fix regarding where binaries are installed
+  git clone git://git.kernel.org/pub/scm/libs/libcap/libcap.git
