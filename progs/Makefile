@@ -4,7 +4,11 @@ include $(topdir)/Make.Rules
 #
 # Programs: all of the examples that we will compile
 #
-PROGS=getpcaps getcap setcap capsh
+PROGS=getpcaps capsh
+ifeq ($(LIBATTR),yes)
+PROGS += getcap setcap
+endif
+
 BUILD=$(PROGS)
 
 ifneq ($(DYNAMIC),yes)
@@ -28,4 +32,4 @@ install: all
 
 clean:
 	$(LOCALCLEAN)
-	rm -f *.o $(BUILD) tcapsh ping
+	rm -f *.o $(BUILD) tcapsh ping hack.sh

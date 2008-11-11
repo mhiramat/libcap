@@ -104,3 +104,23 @@ pass_capsh --secbits=47 --inh=cap_net_raw --drop=cap_net_raw \
     --uid=500 --print -- -c "./ping -c1 localhost"
 
 rm -f ./ping
+
+# test that we do not support capabilities on setuid shell-scripts
+cat > hack.sh <<EOF
+#!/bin/bash
+mypid=\$\$
+caps=\$(./getpcaps \$mypid 2>&1 | cut -d: -f2)
+if [ "\$caps" != " =" ]; then
+  echo "Shell script got [\$caps] - you should upgrade your kernel"
+  exit 1
+fi
+exit 0
+EOF
+chmod +xs hack.sh
+./hack.sh
+status=$?
+rm -f ./hack.sh
+if [ $status -ne 0 ]; then
+    echo "shell scripts can have capabilities (bug)"
+    exit 1
+fi

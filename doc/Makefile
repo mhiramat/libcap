@@ -18,6 +18,15 @@ MANS = $(MAN3S) $(MAN8S)
 
 all: $(MANS)
 
+.PHONY: html
+html:
+	mkdir -p html
+	for man in $(MANS) ; \
+	do \
+		egrep '^\.so man' $$man > /dev/null || \
+		groff -man -Thtml $$man > html/$$man.html ; \
+	done
+
 install:
 	mkdir -p -m 755 $(MANDIR)/man3 $(MANDIR)/man8
 	for man in \
@@ -33,4 +42,6 @@ install:
 
 clean:
 	$(LOCALCLEAN)
+	rm -rf html
+
 

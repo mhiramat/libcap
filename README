@@ -1,4 +1,3 @@
-
 This is a library for getting and setting POSIX.1e (formerly POSIX 6)
 draft 15 capabilities.
 
@@ -8,7 +7,7 @@ This library would not have been possible without the help of
 
 More information on capabilities in the Linux kernel can be found at
 
-	http://linux.kernel.org/pub/linux/libs/security/linux-privs/
+	http://sites.google.com/site/fullycapable/
 
 # INSTALLATION
 
@@ -18,7 +17,7 @@ More information on capabilities in the Linux kernel can be found at
 
 	Linux-Caps % make install
 
-		installs the library libcap.XX.Y in /lib/
+		installs the library libcap.XX.Y in /lib[64]/
 		the binaries in /sbin/
 		the <sys/capability.h> file in /usr/include
 

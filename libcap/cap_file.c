@@ -199,7 +199,7 @@ cap_t cap_get_fd(int fildes)
 }
 
 /*
- * Set the capabilities on a named file.
+ * Get the capabilities from a named file.
  */
 
 cap_t cap_get_file(const char *filename)

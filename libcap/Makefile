@@ -10,14 +10,20 @@ LIBNAME=$(LIBTITLE).so
 STALIBNAME=$(LIBTITLE).a
 #
 
-FILES=cap_alloc cap_proc cap_extint cap_flag cap_text cap_file
+FILES=cap_alloc cap_proc cap_extint cap_flag cap_text
+
+# make including file support something you can override (no libattr
+# no support).
+ifeq ($(LIBATTR),yes)
+FILES += cap_file
+LDFLAGS += -lattr
+endif
 
 INCLS=libcap.h cap_names.h $(INCS)
 OBJS=$(addsuffix .o, $(FILES))
 MAJLIBNAME=$(LIBNAME).$(VERSION)
 MINLIBNAME=$(MAJLIBNAME).$(MINOR)
 GPERF_OUTPUT = _caps_output.gperf
-LDFLAGS += -lattr
 
 all: $(MINLIBNAME) $(STALIBNAME)
 
