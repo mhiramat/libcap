@@ -4,6 +4,8 @@
  * This displays the capabilities of a given file.
  */
 
+#define _XOPEN_SOURCE 500
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/capability.h>
+
+#include <ftw.h>
 
 static int verbose = 0;
 static int recursive = 0;
@@ -27,12 +31,18 @@ static void usage(void)
     exit(1);
 }
 
-static void do_recursive(const char *fname);
-
-static void do_getcap(const char *fname)
+static int do_getcap(const char *fname, const struct stat *stbuf,
+		     int tflag, struct FTW* ftwbuf)
 {
     cap_t cap_d;
     char *result;
+
+    if (tflag != FTW_F) {
+	if (verbose) {
+	    printf("%s (Not a regular file)\n", fname);
+	}
+	return 0;
+    }
 
     cap_d = cap_get_file(fname);
     if (cap_d == NULL) {
@@ -42,7 +52,7 @@ static void do_getcap(const char *fname)
 	} else if (verbose) {
 	    printf("%s\n", fname);
 	}
-	goto out;
+	return 0;
     }
 
     result = cap_to_text(cap_d, NULL);
@@ -51,45 +61,13 @@ static void do_getcap(const char *fname)
 		"Failed to get capabilities of human readable format at `%s' (%s)\n",
 		fname, strerror(errno));
 	cap_free(cap_d);
-	return;
+	return 0;
     }
     printf("%s %s\n", fname, result);
     cap_free(cap_d);
     cap_free(result);
 
-  out:
-    if (recursive) {
-	struct stat stbuf;
-
-	if (stat(fname, &stbuf)) {
-	    fprintf(stderr, "Failed to get attribute of file `%s' (%s)\n",
-		    fname, strerror(errno));
-	} else if (S_ISDIR(stbuf.st_mode)) {
-	    do_recursive(fname);
-	}
-    }
-}
-
-static void do_recursive(const char *fname)
-{
-    DIR *dirp;
-    struct dirent *dent;
-    char buffer[PATH_MAX];
-
-    dirp = opendir(fname);
-    if (dirp == NULL) {
-	fprintf(stderr, "Failed to open directory `%s' (%s)\n",
-		fname, strerror(errno));
-	return;
-    }
-
-    while ((dent = readdir(dirp)) != NULL) {
-	if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, ".."))
-	    continue;
-	snprintf(buffer, PATH_MAX, "%s/%s", fname, dent->d_name);
-	do_getcap(buffer);
-    }
-    closedir(dirp);
+    return 0;
 }
 
 int main(int argc, char **argv)
@@ -112,8 +90,19 @@ int main(int argc, char **argv)
     if (!argv[optind])
 	usage();
 
-    for (i=optind; argv[i] != NULL; i++)
-	do_getcap(argv[i]);
+    for (i=optind; argv[i] != NULL; i++) {
+	struct stat stbuf;
+
+	if (lstat(argv[i], &stbuf) != 0) {
+	    fprintf(stderr, "%s (%s)\n", argv[i], strerror(errno));
+	} else if (recursive) {
+	    nftw(argv[i], do_getcap, 20, FTW_PHYS);
+	} else {
+	    int tflag = S_ISREG(stbuf.st_mode) ? FTW_F :
+		(S_ISLNK(stbuf.st_mode) ? FTW_SL : FTW_NS);
+	    do_getcap(argv[i], &stbuf, tflag, 0);
+	}
+    }
 
     return 0;
 }
