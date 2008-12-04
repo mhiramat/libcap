@@ -17,7 +17,7 @@ struct {
     const char *name;
     int index;
 } const list[] = {
-#include "cap_names.sed"
+#include "cap_names.list.h"
     {NULL, -1}
 };
 

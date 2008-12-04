@@ -1,5 +1,5 @@
 cap_names.h
-cap_names.sed
+cap_names.list.h
 _caps_output.gperf
 libcap.a
 libcap.so*
