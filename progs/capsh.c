@@ -13,10 +13,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/prctl.h>
-#include <sys/capability.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <sys/capability.h>
 
 /* prctl based API for altering character of current process */
 #define PR_GET_KEEPCAPS    7
