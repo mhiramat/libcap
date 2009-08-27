@@ -3,6 +3,7 @@
 # Run through a series of tests to try out the various capability
 # manipulations posible through exec.
 #
+# [Run this as root in a root-enabled process tree.]
 
 try_capsh () {
     echo "TEST: ./capsh $*"
@@ -113,11 +114,14 @@ caps=\$(./getpcaps \$mypid 2>&1 | cut -d: -f2)
 if [ "\$caps" != " =" ]; then
   echo "Shell script got [\$caps] - you should upgrade your kernel"
   exit 1
+else
+  ls -l \$0
+  echo "Good, no capabilities [\$caps] for this setuid-0 shell script"
 fi
 exit 0
 EOF
 chmod +xs hack.sh
-./hack.sh
+capsh --uid=500 -- ./hack.sh
 status=$?
 rm -f ./hack.sh
 if [ $status -ne 0 ]; then
