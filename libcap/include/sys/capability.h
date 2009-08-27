@@ -21,19 +21,14 @@ extern "C" {
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <linux/types.h>
 
 /*
- * Make sure we can be included from userland by preventing
- * capability.h from including other kernel headers
+ * Required to limit what gets defined in the kernel header file.
  */
-#define _LINUX_TYPES_H
-#define _LINUX_FS_H
-#define __LINUX_COMPILER_H
+#ifndef __user
 #define __user
-
-typedef unsigned int __u32;
-typedef __u32 __le32;
-
+#endif
 #include <linux/capability.h>
 
 /*
