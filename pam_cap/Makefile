@@ -3,8 +3,7 @@
 topdir=$(shell pwd)/..
 include ../Make.Rules
 
-LDLIBS += -lcap
-CFLAGS += -fPIC
+LDLIBS += -L../libcap -lcap -lpam
 
 all: pam_cap.so
 	$(MAKE) testcompile
@@ -17,7 +16,7 @@ pam_cap.so: pam_cap.o
 	$(LD) $(LDFLAGS) -o pam_cap.so $< $(LDLIBS)
 
 pam_cap.o: pam_cap.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(IPATH) -c $< -o $@
 
 testcompile: test.c pam_cap.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $+ -lpam -ldl $(LDLIBS)
