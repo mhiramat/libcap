@@ -18,6 +18,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <ctype.h>
 #include <sys/wait.h>
 #include <sys/capability.h>
 
@@ -328,7 +329,50 @@ int main(int argc, char *argv[], char *envp[])
 		exit(1);
 	    }
         } else if (!memcmp("--groups=", argv[i], 9)) {
-	  exit(1);
+	  char *ptr, *buf;
+	  long length, max_groups;
+	  gid_t *group_list;
+	  int g_count;
+
+	  length = sysconf(_SC_GETGR_R_SIZE_MAX);
+	  buf = calloc(1, length);
+	  if (NULL == buf) {
+	    fprintf(stderr, "No memory for [%s] operation\n", argv[i]);
+	    exit(1);
+	  }
+
+	  max_groups = sysconf(_SC_NGROUPS_MAX);
+	  group_list = calloc(max_groups, sizeof(gid_t));
+	  if (NULL == group_list) {
+	    fprintf(stderr, "No memory for gid list\n");
+	    exit(1);
+	  }
+
+	  g_count = 0;
+	  for (ptr = argv[i] + 9; (ptr = strtok(ptr, ","));
+	       ptr = NULL, g_count++) {
+	    if (max_groups <= g_count) {
+	      fprintf(stderr, "Too many groups specified (%d)\n", g_count);
+	      exit(1);
+	    }
+	    if (!isdigit(*ptr)) {
+	      struct group *g, grp;
+	      getgrnam_r(ptr, &grp, buf, length, &g);
+	      if (NULL == g) {
+		fprintf(stderr, "Failed to identify gid for group [%s]\n", ptr);
+		exit(1);
+	      }
+	      group_list[g_count] = g->gr_gid;
+	    } else {
+	      group_list[g_count] = strtoul(ptr, NULL, 0);
+	    }
+	  }
+	  free(buf);
+	  if (setgroups(g_count, group_list) != 0) {
+	    fprintf(stderr, "Failed to setgroups.\n");
+	    exit(1);
+	  }
+	  free(group_list);
 	} else if (!memcmp("--user=", argv[i], 7)) {
 	    struct passwd *pwd;
 	    const char *user;
@@ -374,7 +418,7 @@ int main(int argc, char *argv[], char *envp[])
 	    value = strtoull(argv[i]+9, NULL, 16);
 	    printf("0x%016llx=", value);
 
-	    for (cap=0; value >> cap; ++cap) {
+	    for (cap=0; (cap < 64) && (value >> cap); ++cap) {
 		if (value & (1ULL << cap)) {
 		    const char *ptr;
 
@@ -470,8 +514,9 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --keep=<n>     set keep-capabability bit to <n>\n"
 		   "  --uid=<n>      set uid to <n> (hint: id <username>)\n"
 		   "  --gid=<n>      set gid to <n> (hint: id <username>)\n"
+		   "  --groups=g,... set the supplemental groups\n"
                    "  --user=<name>  set uid,gid and groups to that of user\n"
-		   "  --chroot=path  chroot(2) to this path to invoke bash\n"
+		   "  --chroot=path  chroot(2) to this path\n"
 		   "  --killit=<n>   send signal(n) to child\n"
 		   "  --forkfor=<n>  fork and make child sleep for <n> sec\n"
 		   "  ==             re-exec(capsh) with args as for --\n"
