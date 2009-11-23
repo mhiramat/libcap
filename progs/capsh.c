@@ -13,7 +13,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/prctl.h>
+#include <sys/types.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/capability.h>
@@ -25,6 +28,8 @@
 #define PR_CAPBSET_DROP   24
 #define PR_GET_SECUREBITS 27
 #define PR_SET_SECUREBITS 28
+
+#define MAX_GROUPS       100   /* max number of supplementary groups for user */
 
 static const cap_value_t raise_setpcap[1] = { CAP_SETPCAP };
 static const cap_value_t raise_chroot[1] = { CAP_SYS_CHROOT };
@@ -311,6 +316,54 @@ int main(int argc, char *argv[], char *envp[])
 			value, strerror(errno));
 		exit(1);
 	    }
+	} else if (!memcmp("--gid=", argv[i], 6)) {
+	    unsigned value;
+	    int status;
+
+	    value = strtoul(argv[i]+6, NULL, 0);
+	    status = setgid(value);
+	    if (status < 0) {
+		fprintf(stderr, "Failed to set gid=%u: %s\n",
+			value, strerror(errno));
+		exit(1);
+	    }
+        } else if (!memcmp("--groups=", argv[i], 9)) {
+	  exit(1);
+	} else if (!memcmp("--user=", argv[i], 7)) {
+	    struct passwd *pwd;
+	    const char *user;
+	    gid_t groups[MAX_GROUPS];
+	    int status, ngroups;
+
+	    user = argv[i] + 7;
+	    pwd = getpwnam(user);
+	    if (pwd == NULL) {
+	      fprintf(stderr, "User [%s] not known\n", user);
+	      exit(1);
+	    }
+	    ngroups = MAX_GROUPS;
+	    status = getgrouplist(user, pwd->pw_gid, groups, &ngroups);
+	    if (status < 1) {
+	      perror("Unable to get group list for user");
+	      exit(1);
+	    }
+	    status = setgroups(ngroups, groups);
+	    if (status != 0) {
+	      perror("Unable to set group list for user");
+	      exit(1);
+	    }
+	    status = setgid(pwd->pw_gid);
+	    if (status < 0) {
+		fprintf(stderr, "Failed to set gid=%u(user=%s): %s\n",
+			pwd->pw_gid, user, strerror(errno));
+		exit(1);
+	    }
+	    status = setuid(pwd->pw_uid);
+	    if (status < 0) {
+		fprintf(stderr, "Failed to set uid=%u(user=%s): %s\n",
+			pwd->pw_uid, user, strerror(errno));
+		exit(1);
+	    }
 	} else if (!memcmp("--decode=", argv[i], 9)) {
 	    unsigned long long value;
 	    unsigned cap;
@@ -337,10 +390,11 @@ int main(int argc, char *argv[], char *envp[])
 	    printf("\n");
 	} else if (!strcmp("--print", argv[i])) {
 	    unsigned cap;
-	    int set;
+	    int set, status;
 	    cap_t all;
 	    char *text;
 	    const char *sep;
+	    gid_t groups[MAX_GROUPS];
 
 	    all = cap_get_proc();
 	    text = cap_to_text(all, NULL);
@@ -388,6 +442,15 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	    }
 	    printf("uid=%u\n", getuid());
+	    printf("gid=%u\n", getgid());
+	    printf("groups=");
+	    status = getgroups(MAX_GROUPS, groups);
+	    sep = "";
+	    for (i=0; i < status; i++) {
+	      printf("%s%u", sep, groups[i]);
+	      sep = ",";
+	    }
+	    printf("\n");
 	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
 	    argv[i] = strdup(argv[i][0] == '-' ? "/bin/bash" : argv[0]);
 	    argv[argc] = NULL;
@@ -397,7 +460,7 @@ int main(int argc, char *argv[], char *envp[])
 	} else {
 	usage:
 	    printf("usage: %s [args ...]\n"
-		   "  --help         this message\n"
+		   "  --help         this message (or try 'man capsh')\n"
 		   "  --print        display capability relevant state\n"
 		   "  --decode=xxx   decode a hex string to a list of caps\n"
 		   "  --drop=xxx     remove xxx,.. capabilities from bset\n"
@@ -406,6 +469,8 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --secbits=<n>  write a new value for securebits\n"
 		   "  --keep=<n>     set keep-capabability bit to <n>\n"
 		   "  --uid=<n>      set uid to <n> (hint: id <username>)\n"
+		   "  --gid=<n>      set gid to <n> (hint: id <username>)\n"
+                   "  --user=<name>  set uid,gid and groups to that of user\n"
 		   "  --chroot=path  chroot(2) to this path to invoke bash\n"
 		   "  --killit=<n>   send signal(n) to child\n"
 		   "  --forkfor=<n>  fork and make child sleep for <n> sec\n"
