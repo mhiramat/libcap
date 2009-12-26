@@ -434,7 +434,7 @@ int main(int argc, char *argv[], char *envp[])
 	    printf("\n");
 	} else if (!strcmp("--print", argv[i])) {
 	    unsigned cap;
-	    int set, status;
+	    int set, status, j;
 	    cap_t all;
 	    char *text;
 	    const char *sep;
@@ -490,8 +490,8 @@ int main(int argc, char *argv[], char *envp[])
 	    printf("groups=");
 	    status = getgroups(MAX_GROUPS, groups);
 	    sep = "";
-	    for (i=0; i < status; i++) {
-	      printf("%s%u", sep, groups[i]);
+	    for (j=0; j < status; j++) {
+	      printf("%s%u", sep, groups[j]);
 	      sep = ",";
 	    }
 	    printf("\n");
