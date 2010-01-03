@@ -121,10 +121,14 @@ fi
 exit 0
 EOF
 chmod +xs hack.sh
-capsh --uid=500 -- ./hack.sh
+./capsh --uid=500 -- ./hack.sh
 status=$?
 rm -f ./hack.sh
 if [ $status -ne 0 ]; then
     echo "shell scripts can have capabilities (bug)"
     exit 1
 fi
+
+# Max lockdown
+pass_capsh --keep=1 --user=nobody --caps=cap_setpcap=ep \
+    --drop=all --secbits=0xef --caps= --print

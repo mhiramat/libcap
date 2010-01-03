@@ -35,6 +35,20 @@
 static const cap_value_t raise_setpcap[1] = { CAP_SETPCAP };
 static const cap_value_t raise_chroot[1] = { CAP_SYS_CHROOT };
 
+static char *binary(unsigned long value)
+{
+    static char string[8*sizeof(unsigned long) + 1];
+    unsigned i;
+
+    i = sizeof(string);
+    string[--i] = '\0';
+    do {
+	string[--i] = (value & 1) ? '1' : '0';
+	value >>= 1;
+    } while ((i > 0) && value);
+    return string + i;
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
     pid_t child;
@@ -70,31 +84,44 @@ int main(int argc, char *argv[], char *envp[])
 		exit(1);
 	    }
 
-	    for (ptr = argv[i]+7; (ptr = strtok(ptr, ",")); ptr = NULL) {
-		/* find name for token */
-		cap_value_t cap;
-		int status;
+	    if (strcmp("all", argv[i]+7) == 0) {
+		unsigned j = 0;
+		while (prctl(PR_CAPBSET_READ, j) >= 0) {
+		    if (prctl(PR_CAPBSET_DROP, j) != 0) {
+			fprintf(stderr,
+				"Unable to drop bounding capability [%s]\n",
+				cap_to_name(j));
+			exit(1);
+		    }
+		    j++;
+		}
+	    } else {
+		for (ptr = argv[i]+7; (ptr = strtok(ptr, ",")); ptr = NULL) {
+		    /* find name for token */
+		    cap_value_t cap;
+		    int status;
 
-		if (cap_from_name(ptr, &cap) != 0) {
-		    fprintf(stderr, "capability [%s] is unknown to libcap\n",
-			    ptr);
-		    exit(1);
-		}
-		if (cap_set_proc(raised_for_setpcap) != 0) {
-		    perror("unable to raise CAP_SETPCAP for BSET changes");
-		    exit(1);
-		}
-		status = prctl(PR_CAPBSET_DROP, cap);
-		if (cap_set_proc(orig) != 0) {
-		    perror("unable to lower CAP_SETPCAP post BSET change");
-		    exit(1);
-		}
-		if (status) {
-		    fprintf(stderr, "failed to drop [%s=%u]\n", ptr, cap);
-		    exit(1);
+		    if (cap_from_name(ptr, &cap) != 0) {
+			fprintf(stderr,
+				"capability [%s] is unknown to libcap\n",
+				ptr);
+			exit(1);
+		    }
+		    if (cap_set_proc(raised_for_setpcap) != 0) {
+			perror("unable to raise CAP_SETPCAP for BSET changes");
+			exit(1);
+		    }
+		    status = prctl(PR_CAPBSET_DROP, cap);
+		    if (cap_set_proc(orig) != 0) {
+			perror("unable to lower CAP_SETPCAP post BSET change");
+			exit(1);
+		    }
+		    if (status) {
+			fprintf(stderr, "failed to drop [%s=%u]\n", ptr, cap);
+			exit(1);
+		    }
 		}
 	    }
-
 	    cap_free(raised_for_setpcap);
 	    cap_free(orig);
 	} else if (!memcmp("--inh=", argv[i], 6)) {
@@ -438,7 +465,10 @@ int main(int argc, char *argv[], char *envp[])
 	    cap_t all;
 	    char *text;
 	    const char *sep;
-	    gid_t groups[MAX_GROUPS];
+	    struct group *g;
+	    gid_t groups[MAX_GROUPS], gid;
+	    uid_t uid;
+	    struct passwd *u;
 
 	    all = cap_get_proc();
 	    text = cap_to_text(all, NULL);
@@ -465,7 +495,9 @@ int main(int argc, char *argv[], char *envp[])
 	    printf("\n");
 	    set = prctl(PR_GET_SECUREBITS);
 	    if (set >= 0) {
-		printf("Securebits: 0%o/0x%x\n", set, set);
+		const char *b;
+		b = binary(set);  /* use verilog convention for binary string */
+		printf("Securebits: 0%o/0x%x/%u'b%s\n", set, set, strlen(b), b);
 		printf(" secure-noroot: %s (%s)\n",
 		       (set & 1) ? "yes":"no",
 		       (set & 2) ? "locked":"unlocked");
@@ -485,14 +517,19 @@ int main(int argc, char *argv[], char *envp[])
 		    printf("[Keepcaps ABI not supported]\n");
 		}
 	    }
-	    printf("uid=%u\n", getuid());
-	    printf("gid=%u\n", getgid());
+	    uid = getuid();
+	    u = getpwuid(uid);
+	    printf("uid=%u(%s)\n", getuid(), u ? u->pw_name : "???");
+	    gid = getgid();
+	    g = getgrgid(gid);
+	    printf("gid=%u(%s)\n", gid, g ? g->gr_name : "???");
 	    printf("groups=");
 	    status = getgroups(MAX_GROUPS, groups);
 	    sep = "";
 	    for (j=0; j < status; j++) {
-	      printf("%s%u", sep, groups[j]);
-	      sep = ",";
+		g = getgrgid(groups[j]);
+		printf("%s%u(%s)", sep, groups[j], g ? g->gr_name : "???");
+		sep = ",";
 	    }
 	    printf("\n");
 	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
