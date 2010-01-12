@@ -19,16 +19,10 @@
 #include <grp.h>
 #include <errno.h>
 #include <ctype.h>
-#include <sys/wait.h>
 #include <sys/capability.h>
-
-/* prctl based API for altering character of current process */
-#define PR_GET_KEEPCAPS    7
-#define PR_SET_KEEPCAPS    8
-#define PR_CAPBSET_READ   23
-#define PR_CAPBSET_DROP   24
-#define PR_GET_SECUREBITS 27
-#define PR_SET_SECUREBITS 28
+#include <sys/securebits.h>
+#include <sys/wait.h>
+#include <sys/prctl.h>
 
 #define MAX_GROUPS       100   /* max number of supplementary groups for user */
 

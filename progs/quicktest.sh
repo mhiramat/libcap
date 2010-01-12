@@ -131,4 +131,4 @@ fi
 
 # Max lockdown
 pass_capsh --keep=1 --user=nobody --caps=cap_setpcap=ep \
-    --drop=all --secbits=0xef --caps= --print
+    --drop=all --secbits=0x2f --caps= --print
