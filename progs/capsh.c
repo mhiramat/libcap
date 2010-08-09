@@ -152,7 +152,11 @@ int main(int argc, char *argv[], char *envp[])
 		perror("Out of memory for inh set");
 		exit(1);
 	    }
-	    sprintf(ptr, "%s %s+i", text, argv[i]+6);
+	    if (argv[i][6] && strcmp("none", argv[i]+6)) {
+		sprintf(ptr, "%s %s+i", text, argv[i]+6);
+	    } else {
+		strcpy(ptr, text);
+	    }
 
 	    all = cap_from_text(ptr);
 	    if (all == NULL) {

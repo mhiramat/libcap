@@ -121,7 +121,7 @@ fi
 exit 0
 EOF
 chmod +xs hack.sh
-./capsh --uid=500 -- ./hack.sh
+./capsh --uid=500 --inh=none --print -- ./hack.sh
 status=$?
 rm -f ./hack.sh
 if [ $status -ne 0 ]; then
