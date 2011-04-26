@@ -3,14 +3,20 @@
 .\"
 .TH CAP_GET_PROC 3 "2008-05-11" "" "Linux Programmer's Manual"
 .SH NAME
-cap_get_proc, cap_set_proc, capgetp \- capability manipulation on
-processes
+cap_get_proc, cap_set_proc, capgetp, cap_get_bound, cap_drop_bound \-
+capability manipulation on processes
 .SH SYNOPSIS
 .B #include <sys/capability.h>
 .sp
 .B "cap_t cap_get_proc(void);"
 .sp
 .BI "int cap_set_proc(cap_t " cap_p );
+.sp
+.BI "int cap_get_bound(cap_value_t " cap );
+.sp
+.BI "CAP_IS_SUPPORTED(cap_value_t " cap );
+.sp
+.BI "int cap_drop_bound(cap_value_t " cap );
 .sp
 .B #include <sys/types.h>
 .sp
@@ -52,6 +58,28 @@ with the process capabilities of the process indicated by
 This information can also be obtained from the
 .I /proc/<pid>/status
 file.
+.PP
+.BR cap_get_bound ()
+with a
+.I  cap
+as an argument returns the current value of this bounding set
+capability flag in effect for the current process. This operation is
+unpriveged. Note, a macro function
+.BI "CAP_IS_SUPPORTED(cap_value_t " cap )
+is provided that evaluates to true (1) if the system supports the
+specified capability,
+.IR cap .
+If the system does not support the capability, this function returns
+0. This macro works by testing for an error condition with
+.BR cap_get_bound ().
+.PP
+.BR cap_drop_bound ()
+can be used to lower the specified bounding set capability,
+.BR cap ,
+To complete successfully, the prevailing
+.I effective
+capability set must have a raised
+.BR CAP_SETPCAP .
 .SH "RETURN VALUE"
 The functions
 .BR cap_get_proc ()
@@ -60,7 +88,15 @@ and
 return a non-NULL value on success, and NULL on failure.
 .PP
 The function
+.BR cap_get_bound ()
+returns -1 if the requested capability is unknown, otherwise the
+return value reflects the current state of that capability in the
+prevailing bounding set. Note, a macro function,
+.PP
+The functions
 .BR cap_set_proc ()
+and
+.BR cap_drop_bound ()
 return zero for success, and \-1 on failure.
 .PP
 On failure,
@@ -139,6 +175,9 @@ effective capabilities for the caller:
 
     cap_t caps;
     cap_value_t cap_list[2];
+
+    if (!CAP_IS_SUPPORTED(CAP_SETFCAP))
+        /* handle error */
 
     caps = cap_get_proc();
     if (caps == NULL)

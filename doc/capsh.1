@@ -1,7 +1,7 @@
 .\"
 .\" capsh.1 Man page added 2009-12-23 Andrew G. Morgan <morgan@kernel.org>
 .\"
-.TH CAPSH 1 "2009-12-24" "libcap 2" "User Commands"
+.TH CAPSH 1 "2011-04-24" "libcap 2" "User Commands"
 .SH NAME
 capsh \- capability shell wrapper
 .SH SYNOPSIS
@@ -150,6 +150,15 @@ this effective set is 0x0100. By running:
 
 we observe that the missing capability is:
 .BR cap_setpcap .
+.TP
+.BI --supports= xxx
+As the kernel evolves, more capabilities are added. This option can be used
+to verify the existence of a capability on the system. For example,
+.BI --supports= cap_syslog
+will cause capsh to promptly exit with a status of 1 when run on
+kernel 2.6.27.  However, when run on kernel 2.6.38 it will silently
+succeed.
+.TP
 .SH "EXIT STATUS"
 Following successful execution the tool exits with status 0. Following
 an error, the tool immediately exits with status 1.

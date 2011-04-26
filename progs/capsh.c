@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Andrew G. Morgan <morgan@kernel.org>
+ * Copyright (c) 2008-11 Andrew G. Morgan <morgan@kernel.org>
  *
  * This is a simple 'bash' wrapper program that can be used to
  * raise and lower both the bset and pI capabilities before invoking
@@ -80,11 +80,15 @@ int main(int argc, char *argv[], char *envp[])
 
 	    if (strcmp("all", argv[i]+7) == 0) {
 		unsigned j = 0;
-		while (prctl(PR_CAPBSET_READ, j) >= 0) {
-		    if (prctl(PR_CAPBSET_DROP, j) != 0) {
+		while (CAP_IS_SUPPORTED(j)) {
+		    if (cap_drop_bound(j) != 0) {
+			char *name_ptr;
+
+			name_ptr = cap_to_name(j);
 			fprintf(stderr,
 				"Unable to drop bounding capability [%s]\n",
-				cap_to_name(j));
+				name_ptr);
+			cap_free(name_ptr);
 			exit(1);
 		    }
 		    j++;
@@ -445,11 +449,12 @@ int main(int argc, char *argv[], char *envp[])
 
 	    for (cap=0; (cap < 64) && (value >> cap); ++cap) {
 		if (value & (1ULL << cap)) {
-		    const char *ptr;
+		    char *ptr;
 
 		    ptr = cap_to_name(cap);
 		    if (ptr != NULL) {
 			printf("%s%s", sep, ptr);
+			cap_free(ptr);
 		    } else {
 			printf("%s%u", sep, cap);
 		    }
@@ -457,6 +462,19 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	    }
 	    printf("\n");
+        } else if (!memcmp("--supports=", argv[i], 11)) {
+	    cap_value_t cap;
+
+	    if (cap_from_name(argv[i] + 11, &cap) < 0) {
+		fprintf(stderr, "cap[%s] not recognized by library\n",
+			argv[i] + 11);
+		exit(1);
+	    }
+	    if (!CAP_IS_SUPPORTED(cap)) {
+		fprintf(stderr, "cap[%s=%d] not supported by kernel\n",
+			argv[i] + 11, cap);
+		exit(1);
+	    }
 	} else if (!strcmp("--print", argv[i])) {
 	    unsigned cap;
 	    int set, status, j;
@@ -476,17 +494,18 @@ int main(int argc, char *argv[], char *envp[])
 
 	    printf("Bounding set =");
  	    sep = "";
-	    for (cap=0; (set = prctl(PR_CAPBSET_READ, cap)) >= 0; cap++) {
-		const char *ptr;
+	    for (cap=0; (set = cap_get_bound(cap)) >= 0; cap++) {
+		char *ptr;
 		if (!set) {
 		    continue;
 		}
 
 		ptr = cap_to_name(cap);
-		if (ptr == 0) {
+		if (ptr == NULL) {
 		    printf("%s%u", sep, cap);
 		} else {
 		    printf("%s%s", sep, ptr);
+		    cap_free(ptr);
 		}
 		sep = ",";
 	    }
@@ -542,6 +561,7 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --help         this message (or try 'man capsh')\n"
 		   "  --print        display capability relevant state\n"
 		   "  --decode=xxx   decode a hex string to a list of caps\n"
+		   "  --supports=xxx exit 1 if capability xxx unsupported\n"
 		   "  --drop=xxx     remove xxx,.. capabilities from bset\n"
 		   "  --caps=xxx     set caps as per cap_from_text()\n"
 		   "  --inh=xxx      set xxx,.. inheritiable set\n"

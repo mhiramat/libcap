@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 1997-8,2007 Andrew G Morgan <morgan@kernel.org>
+ * Copyright (c) 1997-8,2007,2011 Andrew G Morgan <morgan@kernel.org>
  *
- * This file deals with setting capabilities on processes.
+ * This file deals with getting and setting capabilities on processes.
  */
 
 #include "libcap.h"
@@ -103,3 +103,22 @@ int capsetp(pid_t pid, cap_t cap_d)
     return error;
 }
 
+/* get a capability from the bounding set */
+
+int cap_get_bound(cap_value_t cap)
+{
+    int result;
+
+    result = prctl(PR_CAPBSET_READ, cap);
+    return result;
+}
+
+/* drop a capability from the bounding set */
+
+int cap_drop_bound(cap_value_t cap)
+{
+    int result;
+
+    result = prctl(PR_CAPBSET_DROP, cap);
+    return result;
+}

@@ -93,6 +93,11 @@ extern cap_t   cap_get_proc(void);
 extern cap_t   cap_get_pid(pid_t);
 extern int     cap_set_proc(cap_t);
 
+extern int     cap_get_bound(cap_value_t);
+extern int     cap_drop_bound(cap_value_t);
+
+#define CAP_IS_SUPPORTED(cap)  (cap_get_bound(cap) >= 0)
+
 /* libcap/cap_extint.c */
 extern ssize_t cap_size(cap_t);
 extern ssize_t cap_copy_ext(void *, cap_t, ssize_t);
