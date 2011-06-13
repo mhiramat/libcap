@@ -48,7 +48,7 @@ KERNEL_HEADERS := $(topdir)/libcap/include
 IPATH += -fPIC -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
 
 CC := gcc
-CFLAGS := -O2
+CFLAGS := -O2 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
 BUILD_CC := $(CC)
 BUILD_CFLAGS := $(CFLAGS) $(IPATH)
 AR := ar
