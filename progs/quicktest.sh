@@ -21,6 +21,7 @@ fail_capsh () {
     echo -n "EXPECT FAILURE: "
     try_capsh "$@"
     if [ $? -eq 1 ]; then
+	echo "[WHICH MEANS A PASS!]"
 	return 0
     else
 	echo "Undesired result - aborting"
@@ -132,3 +133,8 @@ fi
 # Max lockdown
 pass_capsh --keep=1 --user=nobody --caps=cap_setpcap=ep \
     --drop=all --secbits=0x2f --caps= --print
+
+# Verify we can chroot
+pass_capsh --chroot=$(/bin/pwd)
+pass_capsh --chroot=$(/bin/pwd) ==
+fail_capsh --chroot=$(/bin/pwd) -- -c "echo oops"

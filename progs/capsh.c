@@ -278,10 +278,16 @@ int main(int argc, char *argv[], char *envp[])
 		perror("unable to lower CAP_SYS_CHROOT");
 		exit(1);
 	    }
+	    /*
+	     * Given we are now in a new directory tree, its good practice
+	     * to start off in a sane location
+	     */
+	    status = chdir("/");
+
 	    cap_free(orig);
 
 	    if (status != 0) {
-		fprintf(stderr, "Unable to chroot to [%s]", argv[i]+9);
+		fprintf(stderr, "Unable to chroot/chdir to [%s]", argv[i]+9);
 		exit(1);
 	    }
 	} else if (!memcmp("--secbits=", argv[i], 10)) {
