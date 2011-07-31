@@ -520,7 +520,8 @@ int main(int argc, char *argv[], char *envp[])
 	    if (set >= 0) {
 		const char *b;
 		b = binary(set);  /* use verilog convention for binary string */
-		printf("Securebits: 0%o/0x%x/%u'b%s\n", set, set, strlen(b), b);
+		printf("Securebits: 0%o/0x%x/%u'b%s\n", set, set,
+		       (unsigned) strlen(b), b);
 		printf(" secure-noroot: %s (%s)\n",
 		       (set & 1) ? "yes":"no",
 		       (set & 2) ? "locked":"unlocked");
