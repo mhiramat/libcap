@@ -26,7 +26,7 @@ static void usage(void)
 
 static int read_caps(int quiet, const char *filename, char *buffer)
 {
-    int i=MAXCAP;
+    int i = MAXCAP;
 
     if (!quiet) {
 	fprintf(stderr,	"Please enter caps for file [empty line to end]:\n");
@@ -170,10 +170,33 @@ int main(int argc, char **argv)
 	    }
 	    retval = cap_set_file(*++argv, cap_d);
 	    if (retval != 0) {
+		int explained = 0;
+#ifdef linux
+		cap_value_t cap;
+		cap_flag_value_t per_state;
+
+		for (cap = 0;
+		     cap_get_flag(cap_d, cap, CAP_PERMITTED, &per_state) != -1;
+		     cap++) {
+		    cap_flag_value_t inh_state, eff_state;
+
+		    cap_get_flag(cap_d, cap, CAP_INHERITABLE, &inh_state);
+		    cap_get_flag(cap_d, cap, CAP_EFFECTIVE, &eff_state);
+		    if ((inh_state | per_state) != eff_state) {
+			fprintf(stderr, "NOTE: Under Linux, effective file capabilities must either be empty, or\n"
+				"      exactly match the union of selected permitted and inheritable bits.\n");
+			explained = 1;
+			break;
+		    }
+		}
+#endif /* def linux */
+		
 		fprintf(stderr,
 			"Failed to set capabilities on file `%s' (%s)\n",
 			argv[0], strerror(errno));
-		usage();
+		if (!explained) {
+		    usage();
+		}
 	    }
 	}
 	if (cap_d) {
