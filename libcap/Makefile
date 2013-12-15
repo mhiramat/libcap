@@ -43,7 +43,7 @@ $(GPERF_OUTPUT): cap_names.list.h
 
 cap_names.list.h: Makefile $(KERNEL_HEADERS)/linux/capability.h
 	@echo "=> making $@ from $(KERNEL_HEADERS)/linux/capability.h"
-	perl -e 'while ($$l=<>) { if ($$l =~ /^\#define[ \t](CAP[_A-Z]+)[ \t]+([0-9]+)\s+$$/) { $$tok=$$1; $$val=$$2; $$tok =~ tr/A-Z/a-z/; print "{\"$$tok\",$$val},\n"; } }' $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
+	perl -e 'while ($$l=<>) { if ($$l =~ /^\#define[ \t](CAP[_A-Z]+)[ \t]+([0-9]+)\s+$$/) { $$tok=$$1; $$val=$$2; $$tok =~ tr/A-Z/a-z/; print "{\"$$tok\",$$val},\n"; } }' $(KERNEL_HEADERS)/uapi/linux/capability.h | fgrep -v 0x > $@
 
 $(STALIBNAME): $(OBJS)
 	$(AR) rcs $@ $^
