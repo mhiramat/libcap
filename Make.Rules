@@ -7,13 +7,13 @@
 FAKEROOT=$(DESTDIR)
 
 # Autoconf-style prefixes are activated when $(prefix) is defined.
-# Otherwise binaries and libraraies are installed in /{lib,sbin}/,
+# Otherwise binaries and libraries are installed in /{lib,sbin}/,
 # header files in /usr/include/ and documentation in /usr/man/man?/.
 # These choices are motivated by the fact that getcap and setcap are
 # administrative operations that could be needed to recover a system.
 
 ifndef lib
-lib=$(shell ldd /usr/bin/ld|fgrep ld-linux|cut -d/ -f2)
+lib=$(shell ldd /usr/bin/ld|egrep "ld-linux|ld.so"|cut -d/ -f2)
 endif
 
 ifdef prefix
