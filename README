@@ -20,6 +20,7 @@ More information on capabilities in the Linux kernel can be found at
 		installs the library libcap.XX.Y in /lib[64]/
 		the binaries in /sbin/
 		the <sys/capability.h> file in /usr/include
+		the libcap.pc file in /usr/lib[64]/pkgconfig
 
 * for some example programs look in progs.
 

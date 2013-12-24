@@ -35,6 +35,7 @@ MANDIR=$(FAKEROOT)$(man_prefix)/man
 SBINDIR=$(FAKEROOT)$(exec_prefix)/sbin
 INCDIR=$(FAKEROOT)$(inc_prefix)/include
 LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
+PKGCONFIGDIR=$(FAKEROOT)$(prefix)/$(lib)/pkgconfig
 
 # common defines for libcap
 LIBTITLE=libcap

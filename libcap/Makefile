@@ -17,6 +17,7 @@ FILES=cap_alloc cap_proc cap_extint cap_flag cap_text
 ifeq ($(LIBATTR),yes)
 FILES += cap_file
 LDFLAGS += -lattr
+DEPS = -lattr
 endif
 
 INCLS=libcap.h cap_names.h $(INCS)
@@ -25,12 +26,21 @@ MAJLIBNAME=$(LIBNAME).$(VERSION)
 MINLIBNAME=$(MAJLIBNAME).$(MINOR)
 GPERF_OUTPUT = _caps_output.gperf
 
-all: $(MINLIBNAME) $(STALIBNAME)
+all: $(MINLIBNAME) $(STALIBNAME) libcap.pc
 
 ifeq ($(shell gperf --version > /dev/null 2>&1 && echo yes),yes)
 USE_GPERF_OUTPUT = $(GPERF_OUTPUT)
 INCLUDE_GPERF_OUTPUT = -include $(GPERF_OUTPUT)
 endif
+
+libcap.pc: libcap.pc.in
+	sed -e 's,@prefix@,$(prefix),' \
+		-e 's,@exec_prefix@,$(exec_prefix),' \
+		-e 's,@libdir@,$(lib_prefix)/$(lib),' \
+		-e 's,@includedir@,$(inc_prefix)/include,' \
+		-e 's,@VERSION@,$(VERSION).$(MINOR),' \
+		-e 's,@deps@,$(DEPS),' \
+		$< >$@
 
 _makenames: _makenames.c cap_names.list.h
 	$(BUILD_CC) $(BUILD_CFLAGS) $< -o $@
@@ -71,9 +81,11 @@ install: all
 ifeq ($(FAKEROOT),)
 	-/sbin/ldconfig
 endif
+	mkdir -p -m 0755 $(PKGCONFIGDIR)
+	install -m 0644 libcap.pc $(PKGCONFIGDIR)/libcap.pc
 
 clean:
 	$(LOCALCLEAN)
-	rm -f $(OBJS) $(LIBNAME)* $(STALIBNAME)
+	rm -f $(OBJS) $(LIBNAME)* $(STALIBNAME) libcap.pc
 	rm -f cap_names.h cap_names.list.h _makenames $(GPERF_OUTPUT)
 	cd include/sys && $(LOCALCLEAN)
