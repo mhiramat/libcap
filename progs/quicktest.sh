@@ -44,18 +44,23 @@ pass_capsh () {
 
 pass_capsh --print
 
-# Make a local non-setuid-0 version of ping
-cp /bin/ping . && chmod -s ./ping
 
-# Give it the forced capability it needs
-./setcap all=ep ./ping
+# Make a local non-setuid-0 version of capsh and call it privileged
+cp ./capsh ./privileged && chmod -s ./privileged
+if [ $? -ne 0 ]; then
+    echo "Failed to copy capsh for capability manipulation"
+    exit 1
+fi
+
+# Give it the forced capability it could need
+./setcap all=ep ./privileged
 if [ $? -ne 0 ]; then
     echo "Failed to set all capabilities on file"
     exit 1
 fi
-./setcap cap_net_raw=ep ./ping
+./setcap cap_setuid,cap_setgid=ep ./privileged
 if [ $? -ne 0 ]; then
-    echo "Failed to set single capability on ping file"
+    echo "Failed to set limited capabilities on privileged file"
     exit 1
 fi
 
@@ -75,37 +80,40 @@ pass_capsh --uid=500 -- -c "./tcapsh --keep=1 --caps=\"cap_net_raw,cap_net_admin
 # This fails, on 2.6.24, but shouldn't
 pass_capsh --uid=500 -- -c "./tcapsh --keep=1 --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 --forkfor=10 --caps= --print --killit=9 --print"
 
-rm -f tcapsh
-
 # only continue with these if --secbits is supported
 ./capsh --secbits=0x2f > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "unable to test securebits manipulation - assume not supported (PASS)"
-    rm -f ./ping
+    rm -f tcapsh
+    rm -f privileged
     exit 0
 fi
 
 pass_capsh --secbits=42 --print
 fail_capsh --secbits=32 --keep=1 --keep=0 --print
 pass_capsh --secbits=10 --keep=0 --keep=1 --print
-fail_capsh --secbits=47 -- -c "ping -c1 localhost"
+fail_capsh --secbits=47 -- -c "./tcapsh --user=nobody"
+
+rm -f tcapsh
 
 # Suppress uid=0 privilege
-fail_capsh --secbits=47 --print -- -c "/bin/ping -c1 localhost"
+fail_capsh --secbits=47 --print -- -c "./capsh --user=nobody"
 
-# suppress uid=0 privilege and test this ping
-pass_capsh --secbits=0x2f --print -- -c "./ping -c1 localhost"
+# suppress uid=0 privilege and test this privileged
+pass_capsh --secbits=0x2f --print -- -c "./privileged --user=nobody"
 
 # observe that the bounding set can be used to suppress this forced capability
-fail_capsh --drop=cap_net_raw,cap_chown --secbits=0x2f --print -- -c "./ping -c1 localhost"
+fail_capsh --drop=cap_setuid --secbits=0x2f --print -- -c "./privileged --user=nobody"
 
 # change the way the capability is obtained (make it inheritable)
-./setcap cap_net_raw=ei ./ping
+./setcap cap_setuid,cap_setgid=ei ./privileged
 
-pass_capsh --secbits=47 --inh=cap_net_raw --drop=cap_net_raw \
-    --uid=500 --print -- -c "./ping -c1 localhost"
+# Note, the bounding set (edited with --drop) only limits p
+# capabilities, not i's.
+pass_capsh --secbits=47 --inh=cap_setuid,cap_setgid --drop=cap_setuid \
+    --uid=500 --print -- -c "./privileged --user=nobody"
 
-rm -f ./ping
+rm -f ./privileged
 
 # test that we do not support capabilities on setuid shell-scripts
 cat > hack.sh <<EOF
