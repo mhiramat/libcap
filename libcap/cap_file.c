@@ -187,7 +187,7 @@ cap_t cap_get_fd(int fildes)
 	/* fill the capability sets via a system call */
 	sizeofcaps = fgetxattr(fildes, XATTR_NAME_CAPS,
 			       &rawvfscap, sizeof(rawvfscap));
-	if (sizeofcaps < sizeof(rawvfscap.magic_etc)) {
+	if (sizeofcaps < ssizeof(rawvfscap.magic_etc)) {
 	    cap_free(result);
 	    result = NULL;
 	} else {
@@ -217,7 +217,7 @@ cap_t cap_get_file(const char *filename)
 	/* fill the capability sets via a system call */
 	sizeofcaps = getxattr(filename, XATTR_NAME_CAPS,
 			      &rawvfscap, sizeof(rawvfscap));
-	if (sizeofcaps < sizeof(rawvfscap.magic_etc)) {
+	if (sizeofcaps < ssizeof(rawvfscap.magic_etc)) {
 	    cap_free(result);
 	    result = NULL;
 	} else {

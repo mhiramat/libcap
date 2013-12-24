@@ -125,7 +125,7 @@ int cap_free(void *data_p)
     }
 
     if ( good_cap_string(data_p) ) {
-	int length = strlen(data_p) + sizeof(__u32);
+	size_t length = strlen(data_p) + sizeof(__u32);
      	data_p = -1 + (__u32 *) data_p;
      	memset(data_p, 0, length);
      	free(data_p);

@@ -31,7 +31,7 @@ struct cap_ext_struct {
 
 ssize_t cap_size(cap_t caps)
 {
-    return sizeof(struct cap_ext_struct);
+    return ssizeof(struct cap_ext_struct);
 }
 
 /*
@@ -46,7 +46,7 @@ ssize_t cap_copy_ext(void *cap_ext, cap_t cap_d, ssize_t length)
     int i;
 
     /* valid arguments? */
-    if (!good_cap_t(cap_d) || length < sizeof(struct cap_ext_struct)
+    if (!good_cap_t(cap_d) || length < ssizeof(struct cap_ext_struct)
 	|| cap_ext == NULL) {
 	errno = EINVAL;
 	return -1;
@@ -57,7 +57,7 @@ ssize_t cap_copy_ext(void *cap_ext, cap_t cap_d, ssize_t length)
     result->length_of_capset = CAP_SET_SIZE;
 
     for (i=0; i<NUMBER_OF_CAP_SETS; ++i) {
-	int j;
+	size_t j;
 	for (j=0; j<CAP_SET_SIZE; ) {
 	    __u32 val;
 
@@ -71,7 +71,7 @@ ssize_t cap_copy_ext(void *cap_ext, cap_t cap_d, ssize_t length)
     }
 
     /* All done: return length of external representation */
-    return (sizeof(struct cap_ext_struct));
+    return (ssizeof(struct cap_ext_struct));
 }
 
 /*
@@ -99,7 +99,7 @@ cap_t cap_copy_int(const void *cap_ext)
 
     blen = export->length_of_capset;
     for (set=0; set<NUMBER_OF_CAP_SETS; ++set) {
-	int blk;
+	unsigned blk;
 	int bno = 0;
 	for (blk=0; blk<(CAP_SET_SIZE/sizeof(__u32)); ++blk) {
 	    __u32 val = 0;

@@ -12,14 +12,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/capability.h>
 
 #ifndef __u8
-#define __u8    unsigned char
+#define __u8    uint8_t
 #endif /* __8 */
 
 #ifndef __u32
-#define __u32   unsigned int
+#define __u32   uint32_t
 #endif /* __u32 */
 
 /* include the names for the caps and a definition of __CAP_BITS */
@@ -196,5 +197,13 @@ extern int capsetp(pid_t pid, cap_t cap_d);
 #define PR_CAPBSET_DROP   24
 #define PR_GET_SECUREBITS 27
 #define PR_SET_SECUREBITS 28
+
+/*
+ * The library compares sizeof() with integer return values. To avoid
+ * signed/unsigned comparisons, leading to unfortunate
+ * misinterpretations of -1, we provide a convenient cast-to-signed-integer
+ * version of sizeof().
+ */
+#define ssizeof(x) ((ssize_t) sizeof(x))
 
 #endif /* LIBCAP_H */
