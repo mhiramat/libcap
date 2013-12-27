@@ -30,5 +30,5 @@ release: distclean
 	cd .. && ln -s libcap libcap-$(VERSION).$(MINOR) && tar cvfz libcap-$(VERSION).$(MINOR).tar.gz libcap-$(VERSION).$(MINOR)/* && rm libcap-$(VERSION).$(MINOR)
 
 tagrelease: distclean
-	git tag -u D41A6DF2 -s libcap-$(VERSION).$(MINOR)
+	git tag -u E2CCF3F4 -s libcap-$(VERSION).$(MINOR)
 	make release
