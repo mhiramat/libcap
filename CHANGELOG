@@ -4,8 +4,14 @@ For release notes and other info pointers:
 
 See GIT repository for detailed source history
 
-  http://git.kernel.org/?p=libs/libcap/libcap.git;a=summary
+  https://git.kernel.org/cgit/linux/kernel/git/morgan/libcap.git/
 
 Or simply download the source:
 
-  git clone git://git.kernel.org/pub/scm/libs/libcap/libcap.git
+  git clone git://git.kernel.org/pub/scm/linux/kernel/git/morgan/libcap.git
+
+The license for this library is here:
+
+  https://git.kernel.org/cgit/linux/kernel/git/morgan/libcap.git/tree/License
+
+please submit patches compatible with this to morgan at kernel.org.
