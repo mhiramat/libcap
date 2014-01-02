@@ -45,8 +45,8 @@ MINOR=23
 
 # Compilation specifics
 
-KERNEL_HEADERS := $(topdir)/libcap/include
-IPATH += -fPIC -I$(topdir)/libcap/include -I$(KERNEL_HEADERS)
+KERNEL_HEADERS := $(topdir)/libcap/include/uapi
+IPATH += -fPIC -I$(KERNEL_HEADERS) -I$(topdir)/libcap/include
 
 CC := gcc
 CFLAGS := -O2 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64

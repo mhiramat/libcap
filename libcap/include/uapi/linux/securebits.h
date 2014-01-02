@@ -1,14 +1,11 @@
-#ifndef _LINUX_SECUREBITS_H
-#define _LINUX_SECUREBITS_H 1
+#ifndef _UAPI_LINUX_SECUREBITS_H
+#define _UAPI_LINUX_SECUREBITS_H
 
 /* Each securesetting is implemented using two bits. One bit specifies
    whether the setting is on or off. The other bit specify whether the
    setting is locked or not. A setting which is locked cannot be
    changed from user-level. */
 #define issecure_mask(X)	(1 << (X))
-#ifdef __KERNEL__
-#define issecure(X)		(issecure_mask(X) & current_cred_xxx(securebits))
-#endif
 
 #define SECUREBITS_DEFAULT 0x00000000
 
@@ -51,4 +48,4 @@
 				 issecure_mask(SECURE_KEEP_CAPS))
 #define SECURE_ALL_LOCKS	(SECURE_ALL_BITS << 1)
 
-#endif /* !_LINUX_SECUREBITS_H */
+#endif /* _UAPI_LINUX_SECUREBITS_H */

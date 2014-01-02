@@ -26,7 +26,7 @@ extern "C" {
 #ifndef __user
 #define __user
 #endif
-#include <uapi/linux/capability.h>
+#include <linux/capability.h>
 #include <linux/xattr.h>
 
 /*
