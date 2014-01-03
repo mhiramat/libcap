@@ -7,7 +7,7 @@
  *
  * See here for the libcap library ("POSIX draft" compliance):
  *
- * ftp://www.kernel.org/pub/linux/libs/security/linux-privs/kernel-2.6/
+ * http://www.kernel.org/pub/linux/libs/security/linux-privs/
  */
 
 #ifndef _UAPI_LINUX_CAPABILITY_H
