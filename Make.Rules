@@ -40,7 +40,7 @@ PKGCONFIGDIR=$(FAKEROOT)$(prefix)/$(lib)/pkgconfig
 # common defines for libcap
 LIBTITLE=libcap
 VERSION=2
-MINOR=23
+MINOR=24
 #
 
 # Compilation specifics
