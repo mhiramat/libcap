@@ -10,6 +10,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <linux/xattr.h>
+
 #define XATTR_SECURITY_PREFIX "security."
 
 #include "libcap.h"
