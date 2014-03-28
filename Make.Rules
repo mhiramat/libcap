@@ -61,13 +61,14 @@ WARNINGS=-Wall -Wwrite-strings \
         -Wnested-externs -Winline -Wshadow
 LD=$(CC) -Wl,-x -shared
 LDFLAGS := #-g
+BUILD_GPERF := $(shell which gperf >/dev/null 2>/dev/null && echo yes)
 
 SYSTEM_HEADERS = /usr/include
 INCS=$(topdir)/libcap/include/sys/capability.h
 LDFLAGS += -L$(topdir)/libcap
 CFLAGS += -Dlinux $(WARNINGS) $(DEBUG)
 PAM_CAP := $(shell if [ -f /usr/include/security/pam_modules.h ]; then echo yes ; else echo no ; fi)
-INDENT := $(shell if [ -n "$(which indent 2>/dev/null)" ]; then echo "| indent -kr" ; fi)
+INDENT := $(shell if [ -n "$$(which indent 2>/dev/null)" ]; then echo "| indent -kr" ; fi)
 DYNAMIC := $(shell if [ ! -d "$(topdir)/.git" ]; then echo yes; fi)
 LIBATTR := yes
 

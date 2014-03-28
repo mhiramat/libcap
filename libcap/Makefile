@@ -28,7 +28,7 @@ GPERF_OUTPUT = _caps_output.gperf
 
 all: $(MINLIBNAME) $(STALIBNAME) libcap.pc
 
-ifeq ($(shell gperf --version > /dev/null 2>&1 && echo yes),yes)
+ifeq ($(BUILD_GPERF),yes)
 USE_GPERF_OUTPUT = $(GPERF_OUTPUT)
 INCLUDE_GPERF_OUTPUT = -include $(GPERF_OUTPUT)
 endif
