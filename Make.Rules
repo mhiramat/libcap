@@ -31,11 +31,11 @@ endif
 
 # Target directories
 
-MANDIR=$(FAKEROOT)$(man_prefix)/man
-SBINDIR=$(FAKEROOT)$(exec_prefix)/sbin
-INCDIR=$(FAKEROOT)$(inc_prefix)/include
-LIBDIR=$(FAKEROOT)$(lib_prefix)/$(lib)
-PKGCONFIGDIR=$(FAKEROOT)$(prefix)/$(lib)/pkgconfig
+MANDIR=$(man_prefix)/man
+SBINDIR=$(exec_prefix)/sbin
+INCDIR=$(inc_prefix)/include
+LIBDIR=$(lib_prefix)/$(lib)
+PKGCONFIGDIR=$(prefix)/$(lib)/pkgconfig
 
 # common defines for libcap
 LIBTITLE=libcap

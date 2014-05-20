@@ -13,8 +13,8 @@ all: pam_cap.so
 	$(MAKE) testcompile
 
 install: all
-	mkdir -p -m 0755 $(LIBDIR)/security
-	install -m 0755 pam_cap.so $(LIBDIR)/security
+	mkdir -p -m 0755 $(FAKEROOT)$(LIBDIR)/security
+	install -m 0755 pam_cap.so $(FAKEROOT)$(LIBDIR)/security
 
 pam_cap.so: pam_cap.o
 	$(LD) $(LDFLAGS) -o pam_cap.so $< $(LDLIBS)

@@ -25,12 +25,12 @@ $(BUILD): %: %.o
 	$(CC) $(IPATH) $(CFLAGS) -c $< -o $@
 
 install: all
-	mkdir -p -m 0755 $(SBINDIR)
+	mkdir -p -m 0755 $(FAKEROOT)$(SBINDIR)
 	for p in $(PROGS) ; do \
-		install -m 0755 $$p $(SBINDIR) ; \
+		install -m 0755 $$p $(FAKEROOT)$(SBINDIR) ; \
 	done
 ifeq ($(RAISE_SETFCAP),yes)
-	$(SBINDIR)/setcap cap_setfcap=i $(SBINDIR)/setcap
+	$(FAKEROOT)$(SBINDIR)/setcap cap_setfcap=i $(FAKEROOT)$(SBINDIR)/setcap
 endif
 
 clean:

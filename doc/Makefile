@@ -30,11 +30,11 @@ html:
 	done
 
 install:
-	mkdir -p -m 755 $(MANDIR)/man1 $(MANDIR)/man3 $(MANDIR)/man8
+	mkdir -p -m 755 $(FAKEROOT)$(MANDIR)/man1 $(FAKEROOT)$(MANDIR)/man3 $(FAKEROOT)$(MANDIR)/man8
 	for man in \
-		$(MANDIR)/man1 $(MAN1S) \
-		$(MANDIR)/man3 $(MAN3S) \
-		$(MANDIR)/man8 $(MAN8S) \
+		$(FAKEROOT)$(MANDIR)/man1 $(MAN1S) \
+		$(FAKEROOT)$(MANDIR)/man3 $(MAN3S) \
+		$(FAKEROOT)$(MANDIR)/man8 $(MAN8S) \
 		; \
 	do \
 		case $$man in \
