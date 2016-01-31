@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997,2007 Andrew G Morgan <morgan@kernel.org>
+ * Copyright (c) 1997,2007,2016 Andrew G Morgan <morgan@kernel.org>
  *
  * This file deals with setting capabilities on files.
  */
@@ -16,10 +16,6 @@
  * details, and that way we don't need to foce clients to link any
  * other libraries to access them.
  */
-#ifndef XATTR_SECURITY_PREFIX
-#define XATTR_SECURITY_PREFIX "security."
-#endif /* ndef XATTR_SECURITY_PREFIX */
-
 extern ssize_t getxattr(const char *, const char *, void *, size_t);
 extern ssize_t fgetxattr(int, const char *, void *, size_t);
 extern int setxattr(const char *, const char *, const void *, size_t, int);
