@@ -13,7 +13,7 @@
 /*
  * We hardcode the prototypes for the Linux system calls here since
  * there are no libcap library APIs that expose the user to these
- * details, and that way we don't need to foce clients to link any
+ * details, and that way we don't need to force clients to link any
  * other libraries to access them.
  */
 extern ssize_t getxattr(const char *, const char *, void *, size_t);
