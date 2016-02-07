@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-11 Andrew G. Morgan <morgan@kernel.org>
+ * Copyright (c) 2008-11,16 Andrew G. Morgan <morgan@kernel.org>
  *
  * This is a simple 'bash' wrapper program that can be used to
  * raise and lower both the bset and pI capabilities before invoking
@@ -41,6 +41,103 @@ static char *binary(unsigned long value)
 	value >>= 1;
     } while ((i > 0) && value);
     return string + i;
+}
+
+static void display_prctl_set(const char *name, int (*fn)(cap_value_t))
+{
+    unsigned cap;
+    const char *sep;
+    int set;
+
+    printf("%s set =", name);
+    for (sep = "", cap=0; (set = fn(cap)) >= 0; cap++) {
+	char *ptr;
+	if (!set) {
+	    continue;
+	}
+
+	ptr = cap_to_name(cap);
+	if (ptr == NULL) {
+	    printf("%s%u", sep, cap);
+	} else {
+	    printf("%s%s", sep, ptr);
+	    cap_free(ptr);
+	}
+	sep = ",";
+    }
+    if (!cap) {
+	printf(" <unsupported>\n");
+    } else {
+	printf("\n");
+    }
+}
+
+/* arg_print displays the current capability state of the process */
+static void arg_print(void)
+{
+    int set, status, j;
+    cap_t all;
+    char *text;
+    const char *sep;
+    struct group *g;
+    gid_t groups[MAX_GROUPS], gid;
+    uid_t uid;
+    struct passwd *u;
+
+    all = cap_get_proc();
+    text = cap_to_text(all, NULL);
+    printf("Current: %s\n", text);
+    cap_free(text);
+    cap_free(all);
+
+    display_prctl_set("Bounding", cap_get_bound);
+    display_prctl_set("Ambient", cap_get_ambient);
+    set = prctl(PR_GET_SECUREBITS);
+    if (set >= 0) {
+	const char *b;
+	b = binary(set);  /* use verilog convention for binary string */
+	printf("Securebits: 0%o/0x%x/%u'b%s\n", set, set,
+	       (unsigned) strlen(b), b);
+	printf(" secure-noroot: %s (%s)\n",
+	       (set & SECBIT_NOROOT) ? "yes":"no",
+	       (set & SECBIT_NOROOT_LOCKED) ? "locked":"unlocked");
+	printf(" secure-no-suid-fixup: %s (%s)\n",
+	       (set & SECBIT_NO_SETUID_FIXUP) ? "yes":"no",
+	       (set & SECBIT_NO_SETUID_FIXUP_LOCKED) ? "locked":"unlocked");
+	printf(" secure-keep-caps: %s (%s)\n",
+	       (set & SECBIT_KEEP_CAPS) ? "yes":"no",
+	       (set & SECBIT_KEEP_CAPS_LOCKED) ? "locked":"unlocked");
+	if (CAP_AMBIENT_SUPPORTED()) {
+	    printf(" secure-no-ambient-raise: %s (%s)\n",
+		   (set & SECBIT_NO_CAP_AMBIENT_RAISE) ? "yes":"no",
+		   (set & SECBIT_NO_CAP_AMBIENT_RAISE_LOCKED) ?
+		   "locked":"unlocked");
+	}
+    } else {
+	printf("[Securebits ABI not supported]\n");
+	set = prctl(PR_GET_KEEPCAPS);
+	if (set >= 0) {
+	    printf(" prctl-keep-caps: %s (locking not supported)\n",
+		   set ? "yes":"no");
+	} else {
+	    printf("[Keepcaps ABI not supported]\n");
+	}
+    }
+    uid = getuid();
+    u = getpwuid(uid);
+    printf("uid=%u(%s)\n", getuid(), u ? u->pw_name : "???");
+    gid = getgid();
+    g = getgrgid(gid);
+    printf("gid=%u(%s)\n", gid, g ? g->gr_name : "???");
+    printf("groups=");
+    status = getgroups(MAX_GROUPS, groups);
+    sep = "";
+    for (j=0; j < status; j++) {
+	g = getgrgid(groups[j]);
+	printf("%s%u(%s)", sep, groups[j], g ? g->gr_name : "???");
+	sep = ",";
+    }
+    printf("\n");
 }
 
 int main(int argc, char *argv[], char *envp[])
@@ -482,80 +579,7 @@ int main(int argc, char *argv[], char *envp[])
 		exit(1);
 	    }
 	} else if (!strcmp("--print", argv[i])) {
-	    unsigned cap;
-	    int set, status, j;
-	    cap_t all;
-	    char *text;
-	    const char *sep;
-	    struct group *g;
-	    gid_t groups[MAX_GROUPS], gid;
-	    uid_t uid;
-	    struct passwd *u;
-
-	    all = cap_get_proc();
-	    text = cap_to_text(all, NULL);
-	    printf("Current: %s\n", text);
-	    cap_free(text);
-	    cap_free(all);
-
-	    printf("Bounding set =");
- 	    sep = "";
-	    for (cap=0; (set = cap_get_bound(cap)) >= 0; cap++) {
-		char *ptr;
-		if (!set) {
-		    continue;
-		}
-
-		ptr = cap_to_name(cap);
-		if (ptr == NULL) {
-		    printf("%s%u", sep, cap);
-		} else {
-		    printf("%s%s", sep, ptr);
-		    cap_free(ptr);
-		}
-		sep = ",";
-	    }
-	    printf("\n");
-	    set = prctl(PR_GET_SECUREBITS);
-	    if (set >= 0) {
-		const char *b;
-		b = binary(set);  /* use verilog convention for binary string */
-		printf("Securebits: 0%o/0x%x/%u'b%s\n", set, set,
-		       (unsigned) strlen(b), b);
-		printf(" secure-noroot: %s (%s)\n",
-		       (set & 1) ? "yes":"no",
-		       (set & 2) ? "locked":"unlocked");
-		printf(" secure-no-suid-fixup: %s (%s)\n",
-		       (set & 4) ? "yes":"no",
-		       (set & 8) ? "locked":"unlocked");
-		printf(" secure-keep-caps: %s (%s)\n",
-		       (set & 16) ? "yes":"no",
-		       (set & 32) ? "locked":"unlocked");
-	    } else {
-		printf("[Securebits ABI not supported]\n");
-		set = prctl(PR_GET_KEEPCAPS);
-		if (set >= 0) {
-		    printf(" prctl-keep-caps: %s (locking not supported)\n",
-			   set ? "yes":"no");
-		} else {
-		    printf("[Keepcaps ABI not supported]\n");
-		}
-	    }
-	    uid = getuid();
-	    u = getpwuid(uid);
-	    printf("uid=%u(%s)\n", getuid(), u ? u->pw_name : "???");
-	    gid = getgid();
-	    g = getgrgid(gid);
-	    printf("gid=%u(%s)\n", gid, g ? g->gr_name : "???");
-	    printf("groups=");
-	    status = getgroups(MAX_GROUPS, groups);
-	    sep = "";
-	    for (j=0; j < status; j++) {
-		g = getgrgid(groups[j]);
-		printf("%s%u(%s)", sep, groups[j], g ? g->gr_name : "???");
-		sep = ",";
-	    }
-	    printf("\n");
+	    arg_print();
 	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
 	    argv[i] = strdup(argv[i][0] == '-' ? "/bin/bash" : argv[0]);
 	    argv[argc] = NULL;
