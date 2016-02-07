@@ -122,8 +122,9 @@ rm -f ./privileged
 # test that we do not support capabilities on setuid shell-scripts
 cat > hack.sh <<EOF
 #!/bin/bash
+/usr/bin/id
 mypid=\$\$
-caps=\$(./getpcaps \$mypid 2>&1 | cut -d: -f2)
+caps=\$(./getpcaps \$mypid 2>&1 | /usr/bin/cut -d: -f2)
 if [ "\$caps" != " =" ]; then
   echo "Shell script got [\$caps] - you should upgrade your kernel"
   exit 1
