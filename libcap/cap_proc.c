@@ -166,8 +166,8 @@ int cap_set_ambient(cap_value_t cap, cap_flag_value_t set)
 	errno = EINVAL;
 	return -1;
     }
-    result = prctl(PR_CAP_AMBIENT, pr_arg(PR_CAP_AMBIENT_RAISE),
-		   pr_arg(cap), pr_arg(val), pr_arg(0));
+    result = prctl(PR_CAP_AMBIENT, pr_arg(val), pr_arg(cap),
+		   pr_arg(0), pr_arg(0));
     if (result < 0) {
 	errno = -result;
 	return -1;

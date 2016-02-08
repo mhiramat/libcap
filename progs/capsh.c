@@ -26,9 +26,6 @@
 
 #define MAX_GROUPS       100   /* max number of supplementary groups for user */
 
-static const cap_value_t raise_setpcap[1] = { CAP_SETPCAP };
-static const cap_value_t raise_chroot[1] = { CAP_SYS_CHROOT };
-
 static char *binary(unsigned long value)
 {
     static char string[8*sizeof(unsigned long) + 1];
@@ -140,6 +137,175 @@ static void arg_print(void)
     printf("\n");
 }
 
+static const cap_value_t raise_setpcap[1] = { CAP_SETPCAP };
+static const cap_value_t raise_chroot[1] = { CAP_SYS_CHROOT };
+
+static void push_pcap(cap_t *orig_p, cap_t *raised_for_setpcap_p)
+{
+    /*
+     * We need to do this here because --inh=XXX may have reset
+     * orig and it isn't until we are within the --drop code that
+     * we know what the prevailing (orig) pI value is.
+     */
+    *orig_p = cap_get_proc();
+    if (NULL == *orig_p) {
+	perror("Capabilities not available");
+	exit(1);
+    }
+
+    *raised_for_setpcap_p = cap_dup(*orig_p);
+    if (NULL == *raised_for_setpcap_p) {
+	fprintf(stderr, "modification requires CAP_SETPCAP\n");
+	exit(1);
+    }
+    if (cap_set_flag(*raised_for_setpcap_p, CAP_EFFECTIVE, 1,
+		     raise_setpcap, CAP_SET) != 0) {
+	perror("unable to select CAP_SETPCAP");
+	exit(1);
+    }
+}
+
+static void pop_pcap(cap_t orig, cap_t raised_for_setpcap)
+{
+    cap_free(raised_for_setpcap);
+    cap_free(orig);
+}
+
+static void arg_drop(const char *arg_names)
+{
+    char *ptr;
+    cap_t orig, raised_for_setpcap;
+    char *names;
+
+    push_pcap(&orig, &raised_for_setpcap);
+    if (strcmp("all", arg_names) == 0) {
+	unsigned j = 0;
+	while (CAP_IS_SUPPORTED(j)) {
+	    int status;
+	    if (cap_set_proc(raised_for_setpcap) != 0) {
+		perror("unable to raise CAP_SETPCAP for BSET changes");
+		exit(1);
+	    }
+	    status = cap_drop_bound(j);
+	    if (cap_set_proc(orig) != 0) {
+		perror("unable to lower CAP_SETPCAP post BSET change");
+		exit(1);
+	    }
+	    if (status != 0) {
+		char *name_ptr;
+
+		name_ptr = cap_to_name(j);
+		fprintf(stderr, "Unable to drop bounding capability [%s]\n",
+			name_ptr);
+		cap_free(name_ptr);
+		exit(1);
+	    }
+	    j++;
+	}
+	pop_pcap(orig, raised_for_setpcap);
+	return;
+    }
+
+    names = strdup(arg_names);
+    if (NULL == names) {
+	fprintf(stderr, "failed to allocate names\n");
+	exit(1);
+    }
+    for (ptr = names; (ptr = strtok(ptr, ",")); ptr = NULL) {
+	/* find name for token */
+	cap_value_t cap;
+	int status;
+
+	if (cap_from_name(ptr, &cap) != 0) {
+	    fprintf(stderr, "capability [%s] is unknown to libcap\n", ptr);
+	    exit(1);
+	}
+	if (cap_set_proc(raised_for_setpcap) != 0) {
+	    perror("unable to raise CAP_SETPCAP for BSET changes");
+	    exit(1);
+	}
+	status = cap_drop_bound(cap);
+	if (cap_set_proc(orig) != 0) {
+	    perror("unable to lower CAP_SETPCAP post BSET change");
+	    exit(1);
+	}
+	if (status != 0) {
+	    fprintf(stderr, "failed to drop [%s=%u]\n", ptr, cap);
+	    exit(1);
+	}
+    }
+    pop_pcap(orig, raised_for_setpcap);
+    free(names);
+}
+
+static void arg_change_amb(const char *arg_names, cap_flag_value_t set)
+{
+    char *ptr;
+    cap_t orig, raised_for_setpcap;
+    char *names;
+
+    push_pcap(&orig, &raised_for_setpcap);
+    if (strcmp("all", arg_names) == 0) {
+	unsigned j = 0;
+	while (CAP_IS_SUPPORTED(j)) {
+	    int status;
+	    if (cap_set_proc(raised_for_setpcap) != 0) {
+		perror("unable to raise CAP_SETPCAP for AMBIENT changes");
+		exit(1);
+	    }
+	    status = cap_set_ambient(j, set);
+	    if (cap_set_proc(orig) != 0) {
+		perror("unable to lower CAP_SETPCAP post AMBIENT change");
+		exit(1);
+	    }
+	    if (status != 0) {
+		char *name_ptr;
+
+		name_ptr = cap_to_name(j);
+		fprintf(stderr, "Unable to %s ambient capability [%s]\n",
+			set == CAP_CLEAR ? "clear":"raise", name_ptr);
+		cap_free(name_ptr);
+		exit(1);
+	    }
+	    j++;
+	}
+	pop_pcap(orig, raised_for_setpcap);
+	return;
+    }
+
+    names = strdup(arg_names);
+    if (NULL == names) {
+	fprintf(stderr, "failed to allocate names\n");
+	exit(1);
+    }
+    for (ptr = names; (ptr = strtok(ptr, ",")); ptr = NULL) {
+	/* find name for token */
+	cap_value_t cap;
+	int status;
+
+	if (cap_from_name(ptr, &cap) != 0) {
+	    fprintf(stderr, "capability [%s] is unknown to libcap\n", ptr);
+	    exit(1);
+	}
+	if (cap_set_proc(raised_for_setpcap) != 0) {
+	    perror("unable to raise CAP_SETPCAP for AMBIENT changes");
+	    exit(1);
+	}
+	status = cap_set_ambient(cap, set);
+	if (cap_set_proc(orig) != 0) {
+	    perror("unable to lower CAP_SETPCAP post AMBIENT change");
+	    exit(1);
+	}
+	if (status != 0) {
+	    fprintf(stderr, "failed to %s ambient [%s=%u]\n",
+		    set == CAP_CLEAR ? "clear":"raise", ptr, cap);
+	    exit(1);
+	}
+    }
+    pop_pcap(orig, raised_for_setpcap);
+    free(names);
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
     pid_t child;
@@ -149,76 +315,21 @@ int main(int argc, char *argv[], char *envp[])
 
     for (i=1; i<argc; ++i) {
 	if (!memcmp("--drop=", argv[i], 4)) {
-	    char *ptr;
-	    cap_t orig, raised_for_setpcap;
-
-	    /*
-	     * We need to do this here because --inh=XXX may have reset
-	     * orig and it isn't until we are within the --drop code that
-	     * we know what the prevailing (orig) pI value is.
-	     */
-	    orig = cap_get_proc();
-	    if (orig == NULL) {
-		perror("Capabilities not available");
+	    arg_drop(argv[i]+7);
+	} else if (!strcmp("--has-ambient", argv[i])) {
+	    if (!CAP_AMBIENT_SUPPORTED()) {
+		fprintf(stderr, "ambient set not supported\n");
 		exit(1);
 	    }
-
-	    raised_for_setpcap = cap_dup(orig);
-	    if (raised_for_setpcap == NULL) {
-		fprintf(stderr, "BSET modification requires CAP_SETPCAP\n");
+	} else if (!memcmp("--addamb=", argv[i], 9)) {
+	    arg_change_amb(argv[i]+9, CAP_SET);
+	} else if (!memcmp("--delamb=", argv[i], 9)) {
+	    arg_change_amb(argv[i]+9, CAP_CLEAR);
+	} else if (!memcmp("--noamb", argv[i], 7)) {
+	    if (cap_reset_ambient() != 0) {
+		fprintf(stderr, "failed to reset ambient set\n");
 		exit(1);
 	    }
-
-	    if (cap_set_flag(raised_for_setpcap, CAP_EFFECTIVE, 1,
-			     raise_setpcap, CAP_SET) != 0) {
-		perror("unable to select CAP_SETPCAP");
-		exit(1);
-	    }
-
-	    if (strcmp("all", argv[i]+7) == 0) {
-		unsigned j = 0;
-		while (CAP_IS_SUPPORTED(j)) {
-		    if (cap_drop_bound(j) != 0) {
-			char *name_ptr;
-
-			name_ptr = cap_to_name(j);
-			fprintf(stderr,
-				"Unable to drop bounding capability [%s]\n",
-				name_ptr);
-			cap_free(name_ptr);
-			exit(1);
-		    }
-		    j++;
-		}
-	    } else {
-		for (ptr = argv[i]+7; (ptr = strtok(ptr, ",")); ptr = NULL) {
-		    /* find name for token */
-		    cap_value_t cap;
-		    int status;
-
-		    if (cap_from_name(ptr, &cap) != 0) {
-			fprintf(stderr,
-				"capability [%s] is unknown to libcap\n",
-				ptr);
-			exit(1);
-		    }
-		    if (cap_set_proc(raised_for_setpcap) != 0) {
-			perror("unable to raise CAP_SETPCAP for BSET changes");
-			exit(1);
-		    }
-		    status = prctl(PR_CAPBSET_DROP, cap);
-		    if (cap_set_proc(orig) != 0) {
-			perror("unable to lower CAP_SETPCAP post BSET change");
-			exit(1);
-		    }
-		    if (status) {
-			fprintf(stderr, "failed to drop [%s=%u]\n", ptr, cap);
-			exit(1);
-		    }
-		}
-	    }
-	    cap_free(raised_for_setpcap);
-	    cap_free(orig);
 	} else if (!memcmp("--inh=", argv[i], 6)) {
 	    cap_t all, raised_for_setpcap;
 	    char *text;
@@ -594,6 +705,9 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --decode=xxx   decode a hex string to a list of caps\n"
 		   "  --supports=xxx exit 1 if capability xxx unsupported\n"
 		   "  --drop=xxx     remove xxx,.. capabilities from bset\n"
+		   "  --addamb=xxx   add xxx,... capabilities to ambient set\n"
+		   "  --delamb=xxx   remove xxx,... capabilities from ambient\n"
+		   "  --noamb=xxx    reset the ambient capabilities\n"
 		   "  --caps=xxx     set caps as per cap_from_text()\n"
 		   "  --inh=xxx      set xxx,.. inheritiable set\n"
 		   "  --secbits=<n>  write a new value for securebits\n"
