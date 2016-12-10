@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2008-11,16 Andrew G. Morgan <morgan@kernel.org>
  *
- * This is a simple 'bash' wrapper program that can be used to
+ * This is a simple SHELL wrapper program that can be used to
  * raise and lower both the bset and pI capabilities before invoking
- * /bin/bash (hardcoded right now).
+ * SHELL (fall back into /bin/sh).
  *
  * The --print option can be used as a quick test whether various
  * capability manipulations work as expected (or not).
@@ -25,6 +25,13 @@
 #include <sys/prctl.h>
 
 #define MAX_GROUPS       100   /* max number of supplementary groups for user */
+
+static const char *shell_cmd(void)
+{
+    char * sh = getenv("SHELL");
+
+    return sh ? sh : "/bin/sh";
+}
 
 static char *binary(unsigned long value)
 {
@@ -692,10 +699,10 @@ int main(int argc, char *argv[], char *envp[])
 	} else if (!strcmp("--print", argv[i])) {
 	    arg_print();
 	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
-	    argv[i] = strdup(argv[i][0] == '-' ? "/bin/bash" : argv[0]);
+	    argv[i] = strdup(argv[i][0] == '-' ? shell_cmd() : argv[0]);
 	    argv[argc] = NULL;
 	    execve(argv[i], argv+i, envp);
-	    fprintf(stderr, "execve /bin/bash failed!\n");
+	    fprintf(stderr, "execve %s failed!\n", argv[i]);
 	    exit(1);
 	} else {
 	usage:
@@ -720,7 +727,7 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --killit=<n>   send signal(n) to child\n"
 		   "  --forkfor=<n>  fork and make child sleep for <n> sec\n"
 		   "  ==             re-exec(capsh) with args as for --\n"
-		   "  --             remaing arguments are for /bin/bash\n"
+		   "  --             remaing arguments are for SHELL\n"
 		   "                 (without -- [%s] will simply exit(0))\n",
 		   argv[0], argv[0]);
 
