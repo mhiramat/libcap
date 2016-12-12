@@ -23,6 +23,8 @@
 #include <sys/securebits.h>
 #include <sys/wait.h>
 #include <sys/prctl.h>
+#include <sys/stat.h>
+#include <limits.h>
 
 #define MAX_GROUPS       100   /* max number of supplementary groups for user */
 
@@ -31,6 +33,34 @@ static const char *shell_cmd(void)
     char * sh = getenv("SHELL");
 
     return sh ? sh : "/bin/sh";
+}
+
+static char *find_exec_path(char *cmd)
+{
+    char *path = getenv("PATH");
+    char *c, *p, *ret;
+    struct stat st;
+
+    if (!path || cmd[0] == '/')
+	    return cmd;
+
+    ret = malloc(PATH_MAX);
+    if (!ret)
+	    return cmd;
+
+    c = path = strdup(path);
+    while (c) {
+	p = strsep(&c, ":");
+	if (snprintf(ret, PATH_MAX, "%s/%s", *p == '\0' ? "." : p, cmd) < 0)
+	    break;
+	if (!access(ret, X_OK) && !stat(ret, &st) && S_ISREG(st.st_mode))
+	    goto found;
+    }
+    free(ret);
+    ret = cmd;
+found:
+    free(path);
+    return ret;
 }
 
 static char *binary(unsigned long value)
@@ -702,9 +732,10 @@ int main(int argc, char *argv[], char *envp[])
 	} else if (!strcmp("--exec", argv[i])) {
 	    exec_cmd = 1;
 	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
-	    if (exec_cmd)
+	    if (exec_cmd) {
 		i++;
-	    else
+		argv[i] = find_exec_path(argv[i]);
+	    } else
 		argv[i] = strdup(argv[i][0] == '-' ? shell_cmd() : argv[0]);
 	    argv[argc] = NULL;
 	    execve(argv[i], argv+i, envp);
