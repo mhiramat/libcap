@@ -317,6 +317,7 @@ int main(int argc, char *argv[], char *envp[])
 {
     pid_t child;
     unsigned i;
+    int exec_cmd = 0;
 
     child = 0;
 
@@ -698,8 +699,13 @@ int main(int argc, char *argv[], char *envp[])
 	    }
 	} else if (!strcmp("--print", argv[i])) {
 	    arg_print();
+	} else if (!strcmp("--exec", argv[i])) {
+	    exec_cmd = 1;
 	} else if ((!strcmp("--", argv[i])) || (!strcmp("==", argv[i]))) {
-	    argv[i] = strdup(argv[i][0] == '-' ? shell_cmd() : argv[0]);
+	    if (exec_cmd)
+		i++;
+	    else
+		argv[i] = strdup(argv[i][0] == '-' ? shell_cmd() : argv[0]);
 	    argv[argc] = NULL;
 	    execve(argv[i], argv+i, envp);
 	    fprintf(stderr, "execve %s failed!\n", argv[i]);
@@ -726,6 +732,7 @@ int main(int argc, char *argv[], char *envp[])
 		   "  --chroot=path  chroot(2) to this path\n"
 		   "  --killit=<n>   send signal(n) to child\n"
 		   "  --forkfor=<n>  fork and make child sleep for <n> sec\n"
+		   "  --exec         execute given command directly\n"
 		   "  ==             re-exec(capsh) with args as for --\n"
 		   "  --             remaing arguments are for SHELL\n"
 		   "                 (without -- [%s] will simply exit(0))\n",
