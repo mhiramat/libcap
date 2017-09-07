@@ -241,23 +241,13 @@ static void arg_drop(const char *arg_names)
 static void arg_change_amb(const char *arg_names, cap_flag_value_t set)
 {
     char *ptr;
-    cap_t orig, raised_for_setpcap;
     char *names;
 
-    push_pcap(&orig, &raised_for_setpcap);
     if (strcmp("all", arg_names) == 0) {
 	unsigned j = 0;
 	while (CAP_IS_SUPPORTED(j)) {
 	    int status;
-	    if (cap_set_proc(raised_for_setpcap) != 0) {
-		perror("unable to raise CAP_SETPCAP for AMBIENT changes");
-		exit(1);
-	    }
 	    status = cap_set_ambient(j, set);
-	    if (cap_set_proc(orig) != 0) {
-		perror("unable to lower CAP_SETPCAP post AMBIENT change");
-		exit(1);
-	    }
 	    if (status != 0) {
 		char *name_ptr;
 
@@ -269,7 +259,6 @@ static void arg_change_amb(const char *arg_names, cap_flag_value_t set)
 	    }
 	    j++;
 	}
-	pop_pcap(orig, raised_for_setpcap);
 	return;
     }
 
@@ -287,22 +276,13 @@ static void arg_change_amb(const char *arg_names, cap_flag_value_t set)
 	    fprintf(stderr, "capability [%s] is unknown to libcap\n", ptr);
 	    exit(1);
 	}
-	if (cap_set_proc(raised_for_setpcap) != 0) {
-	    perror("unable to raise CAP_SETPCAP for AMBIENT changes");
-	    exit(1);
-	}
 	status = cap_set_ambient(cap, set);
-	if (cap_set_proc(orig) != 0) {
-	    perror("unable to lower CAP_SETPCAP post AMBIENT change");
-	    exit(1);
-	}
 	if (status != 0) {
 	    fprintf(stderr, "failed to %s ambient [%s=%u]\n",
 		    set == CAP_CLEAR ? "clear":"raise", ptr, cap);
 	    exit(1);
 	}
     }
-    pop_pcap(orig, raised_for_setpcap);
     free(names);
 }
 
